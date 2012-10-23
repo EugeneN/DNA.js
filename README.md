@@ -1,4 +1,4 @@
 DNA.js
 ======
 
-The magic to power the whole CS ecosystem up.
+The magic which powers the whole CS ecosystem.
