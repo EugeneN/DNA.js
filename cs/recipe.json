@@ -1,0 +1,15 @@
+{
+    "abstract": {
+        "api_version": 3
+    },
+    "realms": {
+        "default": [
+            {
+                "name": "core",
+                "modules": [
+                    "dna.coffee"
+                ]
+            }    
+        ]
+    }
+}

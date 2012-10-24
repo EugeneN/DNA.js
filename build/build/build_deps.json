@@ -1,0 +1,13 @@
+{
+    "default": {
+        "core": [
+            {
+                "name": "dna.coffee",
+                "deps": [],
+                "adaptor": {
+                    "type": "plain_coffeescript_file"
+                }
+            }
+        ]
+    }
+}

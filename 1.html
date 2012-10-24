@@ -1,0 +1,29 @@
+<html>
+  <style type="text/css">
+    .augmented-structure {
+      width: 150px;
+      height: 150px;
+      background-color: lightgreen;
+      border: 1px solid green;
+    }
+  </style>
+
+  <body>
+    <div class="some-outer-structure">
+      <div class="augmented-structure"
+           id="zzz"
+           data-extend-with=" IDraggable   IPositionReporter IAlertable">
+        <span data-subscribe="IDraggable.onDragStop:getX">here be x</span>
+        <br />
+        <span data-subscribe="IDraggable.onDragStop:getY">here be y</span>
+        <br />
+        <button data-subscribe="click:alert">Go home</button>
+      </div>
+    </div>
+    <span data-subscribe="zzz.my_event|click:zzz.getX|setVisualValue|setBLValue">here be x</span>
+  </body>
+
+  <script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script> 
+  <script src="build/build/default/core.js"></script>
+
+</html>
