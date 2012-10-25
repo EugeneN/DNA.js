@@ -1,4 +1,4 @@
-/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Wed Oct 24 2012 17:47:04 GMT+0300 (EEST) */
+/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Wed Oct 24 2012 18:13:37 GMT+0300 (EEST) */
 /* ZB:dna.js */
 (function() {
   var DA_EXTEND, DEBUG, Implementations, MOLECULES, Protocols, alertable, dispatch_impl, register_protocol_impl, say, yui_draggable, yui_position_reporter;
