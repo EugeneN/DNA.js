@@ -2,8 +2,17 @@
     "default": {
         "core": [
             {
-                "name": "dna.coffee",
+                "name": "genome-parser",
                 "deps": [],
+                "adaptor": {
+                    "type": "cakefile"
+                }
+            },
+            {
+                "name": "dna.coffee",
+                "deps": [
+                    null
+                ],
                 "adaptor": {
                     "type": "plain_coffeescript_file"
                 }

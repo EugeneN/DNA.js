@@ -9,5 +9,12 @@
             "build_root": "build"
         },
         "global": {}
+    },
+    "build": {
+        "build": {
+            "app_root": "cs",
+            "build_root": "build"
+        },
+        "global": {}
     }
 }

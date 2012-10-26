@@ -13,14 +13,14 @@
       <div class="augmented-structure"
            id="zzz"
            data-extend-with=" IDraggable   IPositionReporter IAlertable">
-        <span data-subscribe="IDraggable.onDragStop:getX">here be x</span>
-        <br />
-        <span data-subscribe="IDraggable.onDragStop:getY">here be y</span>
-        <br />
+
+        <span data-subscribe="onDragStop@IDraggable:getX">here be x</span> <br />
+        <span data-subscribe="onDragStop@IDraggable:getY">here be y</span> <br />
+
         <button data-subscribe="click:alert">Go home</button>
       </div>
     </div>
-    <span data-subscribe="zzz.my_event|click:zzz.getX|setVisualValue|setBLValue">here be x</span>
+    <span data-subscribe="zzz@my_event,click:zzz.getX|setVisualValue|setBLValue">here be x</span>
   </body>
 
   <script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script> 

@@ -1,6 +1,7 @@
 
 DEBUG = true
-DA_EXTEND = 'data-extend-with'
+DA_EXTEND = 'extend-with'
+DA_SUBSCRIBE = 'subscribe'
 
 say = (a...) -> console.log.apply console, a
 
@@ -25,7 +26,7 @@ Protocols =
 
 Implementations = {}
 
-MOLECULES = {}
+CELLS = {}
 
 dispatch_impl = (protocol, node, rest...) ->
     # forget about rest for now
@@ -93,15 +94,15 @@ YUI().use 'node', 'event', 'dd', (Y) ->
 
     window.Y = Y if DEBUG
 
-    x = Y.all "[#{DA_EXTEND}]"
+    x = Y.all "[data-#{DA_EXTEND}]"
 
     x.each (node) ->
         node.generateID()
 
-        protocols = ((node.getData 'extend-with').split " ").filter (i) -> !!i
+        protocols = ((node.getData DA_EXTEND).split " ").filter (i) -> !!i
         say "Protocols found for #{node}: #{protocols}"
 
-        new_molecule =
+        new_cell =
             id: node.id
             if: {}
 
@@ -111,30 +112,39 @@ YUI().use 'node', 'event', 'dd', (Y) ->
 
             if p and impl_inst
                 p.map ([fn, attrs]) ->
-                    new_molecule.if[fn] = impl_inst[fn]
+                    new_cell.if[fn] = impl_inst[fn]
 
-        MOLECULES[node.id] = new_molecule
+        CELLS[node.id] = new_cell
 
         # walk down node children and subscribe any declared events to be handled
         # by molecule's handlers
-        node.all('[data-subscribe]').each (s_node) ->
-            subscriptions = ((s_node.getData 'subscribe').split " ").filter (i) -> !!i
+        
+        parse_genome = (require 'genome-parser').parse
 
-            subscriptions.map (s) ->
-                [event, handler_name] = s.split ':'
+        node.all("[data-#{DA_SUBSCRIBE}]").each (s_node) ->
+            subscriptions = parse_genome (s_node.getData DA_SUBSCRIBE)
 
-                [src_proto, proto_event] = event.split '.'
+            say "Subscriptions for #{s_node}:", subscriptions
 
-                handler = (ev) ->
-                    say 'drag end handler here'
-                    s_node.setContent new_molecule.if[handler_name]()
+            proto_event = subscriptions.events[0]?.event.name
+            src_proto = subscriptions.events[0]?.ns?.name
 
-                if src_proto and proto_event
-                    new_molecule.if[proto_event] handler
-                else
-                    s_node.on event, handler
+            handler_name = subscriptions.handlers[0]?.method.name
+            handler_ns = subscriptions.handlers[0]?.ns?.name
+
+            say "XXX:", proto_event, src_proto, handler_name, handler_ns
+            
+            handler = (ev) ->
+                say "Handler here:", proto_event, src_proto, handler_name, handler_ns
+                s_node.setContent new_cell.if[handler_name]()
+
+            if src_proto and proto_event
+                new_cell.if[proto_event] handler
+            else
+                s_node.on src_proto, handler
 
 
-    say MOLECULES
+
+    say 'Cells born for this document:', CELLS
     say "Exiting"
         

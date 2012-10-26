@@ -2,11 +2,19 @@
     "abstract": {
         "api_version": 3
     },
+    
+    "deps": {
+        "dna.coffee": [
+            "genome-parser"
+        ]
+    },
+
     "realms": {
         "default": [
             {
                 "name": "core",
                 "modules": [
+                    "genome-parser",
                     "dna.coffee"
                 ]
             }    

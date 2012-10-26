@@ -1,10 +1,12 @@
 (function() {
-  var DA_EXTEND, DEBUG, Implementations, MOLECULES, Protocols, alertable, dispatch_impl, register_protocol_impl, say, yui_draggable, yui_position_reporter;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, Implementations, Protocols, alertable, dispatch_impl, register_protocol_impl, say, yui_draggable, yui_position_reporter;
   var __slice = Array.prototype.slice;
 
   DEBUG = true;
 
-  DA_EXTEND = 'data-extend-with';
+  DA_EXTEND = 'extend-with';
+
+  DA_SUBSCRIBE = 'subscribe';
 
   say = function() {
     var a;
@@ -20,7 +22,7 @@
 
   Implementations = {};
 
-  MOLECULES = {};
+  CELLS = {};
 
   dispatch_impl = function() {
     var node, protocol, rest;
@@ -112,15 +114,15 @@
     var x;
     say('Entering');
     if (DEBUG) window.Y = Y;
-    x = Y.all("[" + DA_EXTEND + "]");
+    x = Y.all("[data-" + DA_EXTEND + "]");
     x.each(function(node) {
-      var new_molecule, protocols;
+      var new_cell, parse_genome, protocols;
       node.generateID();
-      protocols = ((node.getData('extend-with')).split(" ")).filter(function(i) {
+      protocols = ((node.getData(DA_EXTEND)).split(" ")).filter(function(i) {
         return !!i;
       });
       say("Protocols found for " + node + ": " + protocols);
-      new_molecule = {
+      new_cell = {
         id: node.id,
         "if": {}
       };
@@ -132,33 +134,33 @@
           return p.map(function(_arg) {
             var attrs, fn;
             fn = _arg[0], attrs = _arg[1];
-            return new_molecule["if"][fn] = impl_inst[fn];
+            return new_cell["if"][fn] = impl_inst[fn];
           });
         }
       });
-      MOLECULES[node.id] = new_molecule;
-      return node.all('[data-subscribe]').each(function(s_node) {
-        var subscriptions;
-        subscriptions = ((s_node.getData('subscribe')).split(" ")).filter(function(i) {
-          return !!i;
-        });
-        return subscriptions.map(function(s) {
-          var event, handler, handler_name, proto_event, src_proto, _ref, _ref2;
-          _ref = s.split(':'), event = _ref[0], handler_name = _ref[1];
-          _ref2 = event.split('.'), src_proto = _ref2[0], proto_event = _ref2[1];
-          handler = function(ev) {
-            say('drag end handler here');
-            return s_node.setContent(new_molecule["if"][handler_name]());
-          };
-          if (src_proto && proto_event) {
-            return new_molecule["if"][proto_event](handler);
-          } else {
-            return s_node.on(event, handler);
-          }
-        });
+      CELLS[node.id] = new_cell;
+      parse_genome = (require('genome-parser')).parse;
+      return node.all("[data-" + DA_SUBSCRIBE + "]").each(function(s_node) {
+        var handler, handler_name, handler_ns, proto_event, src_proto, subscriptions, _ref, _ref2, _ref3, _ref4, _ref5, _ref6;
+        subscriptions = parse_genome(s_node.getData(DA_SUBSCRIBE));
+        say("Subscriptions for " + s_node + ":", subscriptions);
+        proto_event = (_ref = subscriptions.events[0]) != null ? _ref.event.name : void 0;
+        src_proto = (_ref2 = subscriptions.events[0]) != null ? (_ref3 = _ref2.ns) != null ? _ref3.name : void 0 : void 0;
+        handler_name = (_ref4 = subscriptions.handlers[0]) != null ? _ref4.method.name : void 0;
+        handler_ns = (_ref5 = subscriptions.handlers[0]) != null ? (_ref6 = _ref5.ns) != null ? _ref6.name : void 0 : void 0;
+        say("XXX:", proto_event, src_proto, handler_name, handler_ns);
+        handler = function(ev) {
+          say("Handler here:", proto_event, src_proto, handler_name, handler_ns);
+          return s_node.setContent(new_cell["if"][handler_name]());
+        };
+        if (src_proto && proto_event) {
+          return new_cell["if"][proto_event](handler);
+        } else {
+          return s_node.on(src_proto, handler);
+        }
       });
     });
-    say(MOLECULES);
+    say('Cells born for this document:', CELLS);
     return say("Exiting");
   });
 

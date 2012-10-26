@@ -1,0 +1,8 @@
+{
+  "name": "DNA genome parser",
+  "version": "0.0.1",
+  "dependencies": { 
+    "jison": "*",
+    "stitch": "*"
+  }
+}
