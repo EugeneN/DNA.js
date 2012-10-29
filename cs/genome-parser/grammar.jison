@@ -9,6 +9,7 @@
 "@"                   return 'AT'
 "|"                   return 'COMPOSE'
 ","                   return 'ALSO'
+\"                    return 'QUOTE'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
 
@@ -22,7 +23,7 @@ directive
     :
     | event_expr BIND handler_expr EOF
         %{ $$ = {events: $1, handlers: $3};
-           /* console.log($$); */
+           console.log($$);
            return $$; %}
     ;
 
@@ -67,4 +68,6 @@ expr
         {{ $$ = { name: $1 }; }}
     | MACRO IDENT
         {{ $$ = { name: $2, macro: true} }}
+    | QUOTE IDENT QUOTE
+        {{ $$ = { type: "string", value: $2 } }}
     ;

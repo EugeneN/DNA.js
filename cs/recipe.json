@@ -5,7 +5,8 @@
     
     "deps": {
         "dna.coffee": [
-            "genome-parser"
+            "genome-parser",
+            "underscore.js"
         ]
     },
 

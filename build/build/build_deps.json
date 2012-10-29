@@ -2,6 +2,13 @@
     "default": {
         "core": [
             {
+                "name": "underscore.js",
+                "deps": [],
+                "adaptor": {
+                    "type": "plain_javascript_file"
+                }
+            },
+            {
                 "name": "genome-parser",
                 "deps": [],
                 "adaptor": {
@@ -11,6 +18,7 @@
             {
                 "name": "dna.coffee",
                 "deps": [
+                    null,
                     null
                 ],
                 "adaptor": {

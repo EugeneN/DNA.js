@@ -1,5 +1,5 @@
 (function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, Implementations, Protocols, alertable, dispatch_impl, register_protocol_impl, say, yui_draggable, yui_position_reporter;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, Implementations, Protocols, alertable, dispatch_handler, dispatch_impl, dom_impl, parse_ast_node, register_protocol_impl, say, synthesize_cell, yui_draggable, yui_position_reporter;
   var __slice = Array.prototype.slice;
 
   DEBUG = true;
@@ -17,8 +17,11 @@
   Protocols = {
     IDraggable: [['setX', ['x']], ['setY', ['y']], ['setXY', ['x', 'y']], ['onDragStart', ['f']], ['onDragStop', ['f']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
-    IAlertable: [['alert', ['m']]]
+    IAlertable: [['alert', ['m']]],
+    IDom: [['setContent', ['new_content']]]
   };
+
+  DEFAULT_PROTOCOLS = ['IDom'];
 
   Implementations = {};
 
@@ -38,13 +41,29 @@
     return Implementations[protocol] = impl;
   };
 
+  dom_impl = function(node) {
+    return (function(node) {
+      return {
+        setContent: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          say('IDom impl', node, args);
+          return node.setContent(args);
+        }
+      };
+    })(node);
+  };
+
+  register_protocol_impl('IDom', dom_impl);
+
   alertable = function(node) {
     return (function(node) {
       return {
         alert: function(m) {
           var t;
           t = node.getHTML();
-          alert('hello', m);
+          say('====>', m);
+          alert("<" + m + ">");
           return t;
         }
       };
@@ -110,9 +129,72 @@
 
   say(Implementations);
 
+  dispatch_handler = function(current_ns, handler_ns, fn) {
+    say('>>>>', current_ns, handler_ns, fn);
+    if (current_ns["if"][fn]) {
+      return current_ns["if"][fn];
+    } else {
+      say("Handler missing for " + fn + " @ " + handler_ns);
+      return function() {
+        return say("Missing handler " + fn + " @ " + handler_ns);
+      };
+    }
+  };
+
+  synthesize_cell = function(node, protocols) {
+    var new_cell;
+    new_cell = {
+      id: node.id,
+      "if": {}
+    };
+    protocols.map(function(protocol) {
+      var impl_inst, p;
+      p = Protocols[protocol];
+      impl_inst = dispatch_impl(protocol, node);
+      if (p && impl_inst) {
+        return p.map(function(_arg) {
+          var attrs, fn;
+          fn = _arg[0], attrs = _arg[1];
+          return new_cell["if"][fn] = impl_inst[fn];
+        });
+      }
+    });
+    CELLS[node.id] = new_cell;
+    return new_cell;
+  };
+
+  parse_ast_node = function(handler, current_node, cell) {
+    var current_cell, handler_name, handler_ns, handler_type, handler_value, _ref, _ref2, _ref3, _ref4;
+    handler_name = (_ref = handler.method) != null ? _ref.name : void 0;
+    handler_type = (_ref2 = handler.method) != null ? _ref2.type : void 0;
+    handler_value = (_ref3 = handler.method) != null ? _ref3.value : void 0;
+    handler_ns = (_ref4 = handler.ns) != null ? _ref4.name : void 0;
+    current_cell = handler_ns === 'this' ? synthesize_cell(current_node, DEFAULT_PROTOCOLS) : cell;
+    switch (handler_type) {
+      case 'string':
+        return function() {
+          return handler_value;
+        };
+      case 'number':
+        return function() {
+          return handler_value;
+        };
+      case 'list':
+        return function() {
+          return handler_value;
+        };
+      case 'hashmap':
+        return function() {
+          return handler_value;
+        };
+      default:
+        return dispatch_handler(current_cell, handler_ns, handler_name);
+    }
+  };
+
   YUI().use('node', 'event', 'dd', function(Y) {
     var x;
-    say('Entering');
+    say('Cells synthesis started');
     if (DEBUG) window.Y = Y;
     x = Y.all("[data-" + DA_EXTEND + "]");
     x.each(function(node) {
@@ -122,46 +204,39 @@
         return !!i;
       });
       say("Protocols found for " + node + ": " + protocols);
-      new_cell = {
-        id: node.id,
-        "if": {}
-      };
-      protocols.map(function(protocol) {
-        var impl_inst, p;
-        p = Protocols[protocol];
-        impl_inst = dispatch_impl(protocol, node);
-        if (p && impl_inst) {
-          return p.map(function(_arg) {
-            var attrs, fn;
-            fn = _arg[0], attrs = _arg[1];
-            return new_cell["if"][fn] = impl_inst[fn];
-          });
-        }
-      });
-      CELLS[node.id] = new_cell;
+      new_cell = synthesize_cell(node, protocols);
       parse_genome = (require('genome-parser')).parse;
       return node.all("[data-" + DA_SUBSCRIBE + "]").each(function(s_node) {
-        var handler, handler_name, handler_ns, proto_event, src_proto, subscriptions, _ref, _ref2, _ref3, _ref4, _ref5, _ref6;
+        var handlers, subscriptions;
         subscriptions = parse_genome(s_node.getData(DA_SUBSCRIBE));
         say("Subscriptions for " + s_node + ":", subscriptions);
-        proto_event = (_ref = subscriptions.events[0]) != null ? _ref.event.name : void 0;
-        src_proto = (_ref2 = subscriptions.events[0]) != null ? (_ref3 = _ref2.ns) != null ? _ref3.name : void 0 : void 0;
-        handler_name = (_ref4 = subscriptions.handlers[0]) != null ? _ref4.method.name : void 0;
-        handler_ns = (_ref5 = subscriptions.handlers[0]) != null ? (_ref6 = _ref5.ns) != null ? _ref6.name : void 0 : void 0;
-        say("XXX:", proto_event, src_proto, handler_name, handler_ns);
-        handler = function(ev) {
-          say("Handler here:", proto_event, src_proto, handler_name, handler_ns);
-          return s_node.setContent(new_cell["if"][handler_name]());
-        };
-        if (src_proto && proto_event) {
-          return new_cell["if"][proto_event](handler);
-        } else {
-          return s_node.on(src_proto, handler);
-        }
+        handlers = subscriptions.handlers.map(function(h) {
+          var handler_chain;
+          if (Array.isArray(h)) {
+            handler_chain = h.map(function(z) {
+              return parse_ast_node(z, s_node, new_cell);
+            });
+            return _.compose.apply(_, handler_chain);
+          } else {
+            return parse_ast_node(h, s_node, new_cell);
+          }
+        });
+        return subscriptions.events.map(function(e) {
+          var event_name, event_ns, _ref, _ref2;
+          event_name = (_ref = e.event) != null ? _ref.name : void 0;
+          event_ns = (_ref2 = e.ns) != null ? _ref2.name : void 0;
+          return handlers.map(function(h) {
+            if (event_ns) {
+              return new_cell["if"][event_name](h);
+            } else {
+              return s_node.on(event_name, h);
+            }
+          });
+        });
       });
     });
-    say('Cells born for this document:', CELLS);
-    return say("Exiting");
+    say('Cells synthesized for this document:', CELLS);
+    return say("Cells synthesis complete.");
   });
 
 }).call(this);

@@ -3,6 +3,7 @@ DEBUG = true
 DA_EXTEND = 'extend-with'
 DA_SUBSCRIBE = 'subscribe'
 
+
 say = (a...) -> console.log.apply console, a
 
 Protocols =
@@ -24,6 +25,12 @@ Protocols =
         ['alert', ['m']]
     ]
 
+    IDom: [
+        ['setContent', ['new_content']]
+    ]
+
+DEFAULT_PROTOCOLS = ['IDom']
+
 Implementations = {}
 
 CELLS = {}
@@ -39,12 +46,22 @@ register_protocol_impl = (protocol, impl) ->
     Implementations[protocol] = impl
 #------------------------------------------------------------------------------
 
+dom_impl = (node) ->
+    do (node) ->
+        {
+            setContent: (args...) ->
+                say 'IDom impl', node, args
+                node.setContent args
+        }
+register_protocol_impl 'IDom', dom_impl
+
 alertable = (node) ->
     do (node) ->
         {
             alert: (m) -> 
                 t = node.getHTML()
-                alert 'hello', m
+                say '====>', m
+                alert "<#{m}>"
                 t
         }
 
@@ -89,8 +106,54 @@ register_protocol_impl 'IPositionReporter', yui_position_reporter
 say Implementations
 
 #------------------------------------------------------------------------------
+dispatch_handler = (current_ns, handler_ns, fn) -> 
+    say '>>>>', current_ns, handler_ns, fn
+    if current_ns.if[fn]
+        current_ns.if[fn]
+    else
+        say "Handler missing for #{fn} @ #{handler_ns}"
+        -> say "Missing handler #{fn} @ #{handler_ns}"
+
+synthesize_cell = (node, protocols) ->
+    new_cell =
+        id: node.id
+        if: {}
+
+    protocols.map (protocol) ->
+        p = Protocols[protocol]
+        impl_inst = dispatch_impl protocol, node
+
+        if p and impl_inst
+            p.map ([fn, attrs]) ->
+                new_cell.if[fn] = impl_inst[fn]
+
+    CELLS[node.id] = new_cell
+
+    new_cell
+
+parse_ast_node = (handler, current_node, cell) ->
+    handler_name = handler.method?.name
+    handler_type = handler.method?.type
+    handler_value = handler.method?.value
+
+    handler_ns = handler.ns?.name
+
+    current_cell = if handler_ns is 'this'
+        synthesize_cell current_node, DEFAULT_PROTOCOLS
+    else
+        cell
+
+    switch handler_type
+        when 'string'    then -> handler_value
+        when 'number'    then -> handler_value
+        when 'list'      then -> handler_value
+        when 'hashmap'   then -> handler_value
+
+        else dispatch_handler current_cell, handler_ns, handler_name
+
+
 YUI().use 'node', 'event', 'dd', (Y) ->
-    say 'Entering'
+    say 'Cells synthesis started'
 
     window.Y = Y if DEBUG
 
@@ -102,22 +165,10 @@ YUI().use 'node', 'event', 'dd', (Y) ->
         protocols = ((node.getData DA_EXTEND).split " ").filter (i) -> !!i
         say "Protocols found for #{node}: #{protocols}"
 
-        new_cell =
-            id: node.id
-            if: {}
-
-        protocols.map (protocol) ->
-            p = Protocols[protocol]
-            impl_inst = dispatch_impl protocol, node
-
-            if p and impl_inst
-                p.map ([fn, attrs]) ->
-                    new_cell.if[fn] = impl_inst[fn]
-
-        CELLS[node.id] = new_cell
+        new_cell = synthesize_cell node, protocols
 
         # walk down node children and subscribe any declared events to be handled
-        # by molecule's handlers
+        # by cells's handlers
         
         parse_genome = (require 'genome-parser').parse
 
@@ -126,25 +177,25 @@ YUI().use 'node', 'event', 'dd', (Y) ->
 
             say "Subscriptions for #{s_node}:", subscriptions
 
-            proto_event = subscriptions.events[0]?.event.name
-            src_proto = subscriptions.events[0]?.ns?.name
+            handlers = subscriptions.handlers.map (h) ->
+                if Array.isArray h
+                    handler_chain = h.map (z) -> parse_ast_node z, s_node, new_cell
+                    _.compose(handler_chain...)
+                else
+                    parse_ast_node h, s_node, new_cell
 
-            handler_name = subscriptions.handlers[0]?.method.name
-            handler_ns = subscriptions.handlers[0]?.ns?.name
+            subscriptions.events.map (e) ->
+                event_name = e.event?.name
+                event_ns = e.ns?.name
 
-            say "XXX:", proto_event, src_proto, handler_name, handler_ns
-            
-            handler = (ev) ->
-                say "Handler here:", proto_event, src_proto, handler_name, handler_ns
-                s_node.setContent new_cell.if[handler_name]()
-
-            if src_proto and proto_event
-                new_cell.if[proto_event] handler
-            else
-                s_node.on src_proto, handler
+                handlers.map (h) ->
+                    # delegate this later
+                    if event_ns
+                        new_cell.if[event_name] h
+                    else
+                        s_node.on event_name, h
 
 
-
-    say 'Cells born for this document:', CELLS
-    say "Exiting"
+    say 'Cells synthesized for this document:', CELLS
+    say "Cells synthesis complete."
         
