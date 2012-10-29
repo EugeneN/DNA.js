@@ -5,16 +5,16 @@ stitch = require 'stitch'
 
 ENC = 'utf8'
 GRAMMAR = './grammar.jison'
-TMP_STITCH_DIR = path.resolve __dirname, './tmp'
+TMP_STITCH_DIR = path.resolve __dirname, './stitch-build'
 TMP_TARGET_FN = path.resolve TMP_STITCH_DIR, 'genome-parser.js'
 
-task 'cafebuild', 'build with cafe', cafebuild = (cb) ->
+task 'cafebuild', 'build with cafe', (cb) ->
     unless process.env.CAFE_TMP_BUILD_ROOT and process.env.CAFE_TARGET_FN
         throw "No CAFE_TMP_BUILD_ROOT and/or CAFE_TARGET_FN found in env"
 
     tmp_build_root = process.env.CAFE_TMP_BUILD_ROOT
 
-    target_fn = (path.resolve process.env.CAFE_TMP_BUILD_ROOT, 
+    target_fn = (path.resolve process.env.CAFE_TMP_BUILD_ROOT,
                               process.env.CAFE_TARGET_FN)
 
     fs.readFile GRAMMAR, ENC, (err, grammar) ->
@@ -31,6 +31,6 @@ task 'cafebuild', 'build with cafe', cafebuild = (cb) ->
                 throw err if err
 
                 fs.writeFile target_fn, stitched_src, ENC, cb
-    
+
 
 

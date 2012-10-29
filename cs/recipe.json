@@ -2,9 +2,9 @@
     "abstract": {
         "api_version": 3
     },
-    
+
     "deps": {
-        "dna.coffee": [
+        "dna": [
             "genome-parser",
             "underscore.js"
         ]
@@ -16,9 +16,9 @@
                 "name": "core",
                 "modules": [
                     "genome-parser",
-                    "dna.coffee"
+                    "dna"
                 ]
-            }    
+            }
         ]
     }
 }

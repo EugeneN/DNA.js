@@ -16,13 +16,13 @@
                 }
             },
             {
-                "name": "dna.coffee",
+                "name": "dna",
                 "deps": [
                     null,
                     null
                 ],
                 "adaptor": {
-                    "type": "plain_coffeescript_file"
+                    "type": "cakefile"
                 }
             }
         ]
