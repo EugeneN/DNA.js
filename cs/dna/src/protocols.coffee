@@ -16,7 +16,9 @@ Protocols =
 
     IDom: [
         ['setContent', ['new_content']]
-        ['alert', ['m']]
+        ['alert', ['msg']]
+        ['click', ['handler']]
+        ['say', ['msgs']]
     ]
 
 DEFAULT_PROTOCOLS = ['IDom']

@@ -2,24 +2,27 @@
 say = (a...) -> console.log.apply console, a
 
 Implementations = {}
+THIS = 'this'
 
 
 register_protocol_impl = (protocol, impl) ->
+    say "Registering an implementation for the protocol #{protocol}"
     Implementations[protocol] = impl
 
 dispatch_impl = (protocol, node, rest...) ->
     # forget about rest for now
+    try
+        require protocol
+    catch e
+        say "Can't find a single module for an implementation of the protocol '#{protocol}'"
+
     if Implementations[protocol]
         Implementations[protocol](node)
     else
         null
 
-dispatch_handler = (current_cell, handler_ns, fn) ->
-    if current_cell.receptors[fn]
-        current_cell.receptors[fn]
-    else
-        say "Handler missing for #{fn} @ #{handler_ns}"
-        -> say "Missing handler #{fn} @ #{handler_ns}"
+dump_impls = ->
+    say "Currently registered implementations:", Implementations
 
 
-module.exports = {register_protocol_impl, dispatch_impl, dispatch_handler}
+module.exports = {register_protocol_impl, dispatch_impl, dump_impls}

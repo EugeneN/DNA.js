@@ -2,9 +2,9 @@
 var parser = (function(){
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"directive":3,"event_expr":4,"BIND":5,"handler_expr":6,"EOF":7,"single_event_expr":8,"ALSO":9,"expr":10,"AT":11,"composed_handler_expr":12,"method":13,"COMPOSE":14,"IDENT":15,"MACRO":16,"QUOTE":17,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"BIND",7:"EOF",9:"ALSO",11:"AT",14:"COMPOSE",15:"IDENT",16:"MACRO",17:"QUOTE"},
-productions_: [0,[3,0],[3,4],[4,1],[4,3],[8,1],[8,3],[6,1],[6,3],[12,1],[12,3],[13,1],[13,3],[10,1],[10,2],[10,3]],
+symbols_: {"error":2,"directive":3,"event_expr":4,"BIND":5,"handler_expr":6,"EOF":7,"single_event_expr":8,"ALSO":9,"expr":10,"AT":11,"NS_SEP":12,"composed_handler_expr":13,"method":14,"COMPOSE":15,"IDENT":16,"MACRO":17,"QUOTE":18,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"BIND",7:"EOF",9:"ALSO",11:"AT",12:"NS_SEP",15:"COMPOSE",16:"IDENT",17:"MACRO",18:"QUOTE"},
+productions_: [0,[3,0],[3,4],[4,1],[4,3],[8,1],[8,3],[8,3],[8,5],[6,1],[6,3],[13,1],[13,3],[14,1],[14,3],[14,3],[14,5],[10,1],[10,2],[10,3]],
 performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
 var $0 = $$.length - 1;
@@ -17,32 +17,40 @@ case 3: this.$ = $$[$0];
 break;
 case 4: this.$ = ($$[$0-2]).concat($$[$0]); 
 break;
-case 5: this.$ = [{event: $$[$0], ns: undefined}]; 
+case 5: this.$ = [{ns: undefined, event: $$[$0], scope: undefined}]; 
 break;
-case 6: this.$ = [{event: $$[$0-2], ns: $$[$0]}]; 
+case 6: this.$ = [{ns: undefined, event: $$[$0-2], scope: $$[$0]}]; 
 break;
-case 7: this.$ = [$$[$0]]; 
+case 7: this.$ = [{ns: $$[$0-2], event: $$[$0], scope: undefined}]; 
 break;
-case 8: this.$ = ($$[$0-2]).concat([$$[$0]]); 
+case 8: this.$ = [{ns: $$[$0-4], event: $$[$0-2], scope: $$[$0]}]; 
 break;
-case 9: this.$ = $$[$0]; 
+case 9: this.$ = [$$[$0]]; 
 break;
-case 10: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
+case 10: this.$ = ($$[$0-2]).concat([$$[$0]]); 
 break;
-case 11: this.$ = {method: $$[$0], ns: undefined}; 
+case 11: this.$ = $$[$0]; 
 break;
-case 12: this.$ = {method: $$[$0-2], ns: $$[$0]}; 
+case 12: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
 break;
-case 13: this.$ = { name: $$[$0] }; 
+case 13: this.$ = {ns: undefined, method: $$[$0], scope: undefined}; 
 break;
-case 14: this.$ = { name: $$[$0], macro: true} 
+case 14: this.$ = {ns: $$[$0-2], method: $$[$0], scope: undefined} 
 break;
-case 15: this.$ = { type: "string", value: $$[$0-1] } 
+case 15: this.$ = {ns: undefined, method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 16: this.$ = {ns: $$[$0-4], method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 17: this.$ = { name: $$[$0] }; 
+break;
+case 18: this.$ = { name: $$[$0], macro: true} 
+break;
+case 19: this.$ = { type: "string", value: $$[$0-1] } 
 break;
 }
 },
-table: [{1:[2,1],3:1,4:2,8:3,10:4,15:[1,5],16:[1,6],17:[1,7]},{1:[3]},{5:[1,8],9:[1,9]},{5:[2,3],9:[2,3]},{5:[2,5],9:[2,5],11:[1,10]},{5:[2,13],7:[2,13],9:[2,13],11:[2,13],14:[2,13]},{15:[1,11]},{15:[1,12]},{6:13,10:16,12:14,13:15,15:[1,5],16:[1,6],17:[1,7]},{8:17,10:4,15:[1,5],16:[1,6],17:[1,7]},{10:18,15:[1,5],16:[1,6],17:[1,7]},{5:[2,14],7:[2,14],9:[2,14],11:[2,14],14:[2,14]},{17:[1,19]},{7:[1,20],9:[1,21]},{7:[2,7],9:[2,7],14:[1,22]},{7:[2,9],9:[2,9],14:[2,9]},{7:[2,11],9:[2,11],11:[1,23],14:[2,11]},{5:[2,4],9:[2,4]},{5:[2,6],9:[2,6]},{5:[2,15],7:[2,15],9:[2,15],11:[2,15],14:[2,15]},{1:[2,2]},{10:16,12:24,13:15,15:[1,5],16:[1,6],17:[1,7]},{10:16,13:25,15:[1,5],16:[1,6],17:[1,7]},{10:26,15:[1,5],16:[1,6],17:[1,7]},{7:[2,8],9:[2,8],14:[1,22]},{7:[2,10],9:[2,10],14:[2,10]},{7:[2,12],9:[2,12],14:[2,12]}],
-defaultActions: {20:[2,2]},
+table: [{1:[2,1],3:1,4:2,8:3,10:4,16:[1,5],17:[1,6],18:[1,7]},{1:[3]},{5:[1,8],9:[1,9]},{5:[2,3],9:[2,3]},{5:[2,5],9:[2,5],11:[1,10],12:[1,11]},{5:[2,17],7:[2,17],9:[2,17],11:[2,17],12:[2,17],15:[2,17]},{16:[1,12]},{16:[1,13]},{6:14,10:17,13:15,14:16,16:[1,5],17:[1,6],18:[1,7]},{8:18,10:4,16:[1,5],17:[1,6],18:[1,7]},{10:19,16:[1,5],17:[1,6],18:[1,7]},{10:20,16:[1,5],17:[1,6],18:[1,7]},{5:[2,18],7:[2,18],9:[2,18],11:[2,18],12:[2,18],15:[2,18]},{18:[1,21]},{7:[1,22],9:[1,23]},{7:[2,9],9:[2,9],15:[1,24]},{7:[2,11],9:[2,11],15:[2,11]},{7:[2,13],9:[2,13],11:[1,26],12:[1,25],15:[2,13]},{5:[2,4],9:[2,4]},{5:[2,6],9:[2,6]},{5:[2,7],9:[2,7],11:[1,27]},{5:[2,19],7:[2,19],9:[2,19],11:[2,19],12:[2,19],15:[2,19]},{1:[2,2]},{10:17,13:28,14:16,16:[1,5],17:[1,6],18:[1,7]},{10:17,14:29,16:[1,5],17:[1,6],18:[1,7]},{10:30,16:[1,5],17:[1,6],18:[1,7]},{10:31,16:[1,5],17:[1,6],18:[1,7]},{10:32,16:[1,5],17:[1,6],18:[1,7]},{7:[2,10],9:[2,10],15:[1,24]},{7:[2,12],9:[2,12],15:[2,12]},{7:[2,14],9:[2,14],11:[1,33],15:[2,14]},{7:[2,15],9:[2,15],15:[2,15]},{5:[2,8],9:[2,8]},{10:34,16:[1,5],17:[1,6],18:[1,7]},{7:[2,16],9:[2,16],15:[2,16]}],
+defaultActions: {22:[2,2]},
 parseError: function parseError(str, hash) {
     throw new Error(str);
 },
@@ -325,28 +333,30 @@ var YYSTATE=YY_START
 switch($avoiding_name_collisions) {
 case 0:/* skip whitespace */
 break;
-case 1:return 15
+case 1:return 16
 break;
-case 2:return 16
+case 2:return 17
 break;
 case 3:return 5
 break;
 case 4:return 11
 break;
-case 5:return 14
+case 5:return 15
 break;
 case 6:return 9
 break;
-case 7:return 17
+case 7:return 18
 break;
-case 8:return 7
+case 8:return 12
 break;
-case 9:return 'INVALID'
+case 9:return 7
+break;
+case 10:return 'INVALID'
 break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:")/,/^(?:$)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:")/,/^(?:\/)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;
 function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;

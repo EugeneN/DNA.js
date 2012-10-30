@@ -17,12 +17,20 @@
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           say('IDom impl', node, args);
-          return node.setContent(args);
+          return node.setContent(args[0]);
         },
         alert: function() {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           return alert.apply(null, args);
+        },
+        click: function(handler) {
+          return node.on('click', handler);
+        },
+        say: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return say.apply(null, args);
         }
       };
     })(node);

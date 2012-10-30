@@ -1,4 +1,4 @@
-/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Mon Oct 29 2012 19:20:39 GMT+0200 (EET) */
+/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Tue Oct 30 2012 17:22:08 GMT+0200 (EET) */
 /* ZB:underscore.js */
 //     Underscore.js 1.4.2
 //     http://underscorejs.org
@@ -1256,9 +1256,9 @@
 var parser = (function(){
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"directive":3,"event_expr":4,"BIND":5,"handler_expr":6,"EOF":7,"single_event_expr":8,"ALSO":9,"expr":10,"AT":11,"composed_handler_expr":12,"method":13,"COMPOSE":14,"IDENT":15,"MACRO":16,"QUOTE":17,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"BIND",7:"EOF",9:"ALSO",11:"AT",14:"COMPOSE",15:"IDENT",16:"MACRO",17:"QUOTE"},
-productions_: [0,[3,0],[3,4],[4,1],[4,3],[8,1],[8,3],[6,1],[6,3],[12,1],[12,3],[13,1],[13,3],[10,1],[10,2],[10,3]],
+symbols_: {"error":2,"directive":3,"event_expr":4,"BIND":5,"handler_expr":6,"EOF":7,"single_event_expr":8,"ALSO":9,"expr":10,"AT":11,"NS_SEP":12,"composed_handler_expr":13,"method":14,"COMPOSE":15,"IDENT":16,"MACRO":17,"QUOTE":18,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"BIND",7:"EOF",9:"ALSO",11:"AT",12:"NS_SEP",15:"COMPOSE",16:"IDENT",17:"MACRO",18:"QUOTE"},
+productions_: [0,[3,0],[3,4],[4,1],[4,3],[8,1],[8,3],[8,3],[8,5],[6,1],[6,3],[13,1],[13,3],[14,1],[14,3],[14,3],[14,5],[10,1],[10,2],[10,3]],
 performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
 var $0 = $$.length - 1;
@@ -1271,32 +1271,40 @@ case 3: this.$ = $$[$0];
 break;
 case 4: this.$ = ($$[$0-2]).concat($$[$0]); 
 break;
-case 5: this.$ = [{event: $$[$0], ns: undefined}]; 
+case 5: this.$ = [{ns: undefined, event: $$[$0], scope: undefined}]; 
 break;
-case 6: this.$ = [{event: $$[$0-2], ns: $$[$0]}]; 
+case 6: this.$ = [{ns: undefined, event: $$[$0-2], scope: $$[$0]}]; 
 break;
-case 7: this.$ = [$$[$0]]; 
+case 7: this.$ = [{ns: $$[$0-2], event: $$[$0], scope: undefined}]; 
 break;
-case 8: this.$ = ($$[$0-2]).concat([$$[$0]]); 
+case 8: this.$ = [{ns: $$[$0-4], event: $$[$0-2], scope: $$[$0]}]; 
 break;
-case 9: this.$ = $$[$0]; 
+case 9: this.$ = [$$[$0]]; 
 break;
-case 10: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
+case 10: this.$ = ($$[$0-2]).concat([$$[$0]]); 
 break;
-case 11: this.$ = {method: $$[$0], ns: undefined}; 
+case 11: this.$ = $$[$0]; 
 break;
-case 12: this.$ = {method: $$[$0-2], ns: $$[$0]}; 
+case 12: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
 break;
-case 13: this.$ = { name: $$[$0] }; 
+case 13: this.$ = {ns: undefined, method: $$[$0], scope: undefined}; 
 break;
-case 14: this.$ = { name: $$[$0], macro: true} 
+case 14: this.$ = {ns: $$[$0-2], method: $$[$0], scope: undefined} 
 break;
-case 15: this.$ = { type: "string", value: $$[$0-1] } 
+case 15: this.$ = {ns: undefined, method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 16: this.$ = {ns: $$[$0-4], method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 17: this.$ = { name: $$[$0] }; 
+break;
+case 18: this.$ = { name: $$[$0], macro: true} 
+break;
+case 19: this.$ = { type: "string", value: $$[$0-1] } 
 break;
 }
 },
-table: [{1:[2,1],3:1,4:2,8:3,10:4,15:[1,5],16:[1,6],17:[1,7]},{1:[3]},{5:[1,8],9:[1,9]},{5:[2,3],9:[2,3]},{5:[2,5],9:[2,5],11:[1,10]},{5:[2,13],7:[2,13],9:[2,13],11:[2,13],14:[2,13]},{15:[1,11]},{15:[1,12]},{6:13,10:16,12:14,13:15,15:[1,5],16:[1,6],17:[1,7]},{8:17,10:4,15:[1,5],16:[1,6],17:[1,7]},{10:18,15:[1,5],16:[1,6],17:[1,7]},{5:[2,14],7:[2,14],9:[2,14],11:[2,14],14:[2,14]},{17:[1,19]},{7:[1,20],9:[1,21]},{7:[2,7],9:[2,7],14:[1,22]},{7:[2,9],9:[2,9],14:[2,9]},{7:[2,11],9:[2,11],11:[1,23],14:[2,11]},{5:[2,4],9:[2,4]},{5:[2,6],9:[2,6]},{5:[2,15],7:[2,15],9:[2,15],11:[2,15],14:[2,15]},{1:[2,2]},{10:16,12:24,13:15,15:[1,5],16:[1,6],17:[1,7]},{10:16,13:25,15:[1,5],16:[1,6],17:[1,7]},{10:26,15:[1,5],16:[1,6],17:[1,7]},{7:[2,8],9:[2,8],14:[1,22]},{7:[2,10],9:[2,10],14:[2,10]},{7:[2,12],9:[2,12],14:[2,12]}],
-defaultActions: {20:[2,2]},
+table: [{1:[2,1],3:1,4:2,8:3,10:4,16:[1,5],17:[1,6],18:[1,7]},{1:[3]},{5:[1,8],9:[1,9]},{5:[2,3],9:[2,3]},{5:[2,5],9:[2,5],11:[1,10],12:[1,11]},{5:[2,17],7:[2,17],9:[2,17],11:[2,17],12:[2,17],15:[2,17]},{16:[1,12]},{16:[1,13]},{6:14,10:17,13:15,14:16,16:[1,5],17:[1,6],18:[1,7]},{8:18,10:4,16:[1,5],17:[1,6],18:[1,7]},{10:19,16:[1,5],17:[1,6],18:[1,7]},{10:20,16:[1,5],17:[1,6],18:[1,7]},{5:[2,18],7:[2,18],9:[2,18],11:[2,18],12:[2,18],15:[2,18]},{18:[1,21]},{7:[1,22],9:[1,23]},{7:[2,9],9:[2,9],15:[1,24]},{7:[2,11],9:[2,11],15:[2,11]},{7:[2,13],9:[2,13],11:[1,26],12:[1,25],15:[2,13]},{5:[2,4],9:[2,4]},{5:[2,6],9:[2,6]},{5:[2,7],9:[2,7],11:[1,27]},{5:[2,19],7:[2,19],9:[2,19],11:[2,19],12:[2,19],15:[2,19]},{1:[2,2]},{10:17,13:28,14:16,16:[1,5],17:[1,6],18:[1,7]},{10:17,14:29,16:[1,5],17:[1,6],18:[1,7]},{10:30,16:[1,5],17:[1,6],18:[1,7]},{10:31,16:[1,5],17:[1,6],18:[1,7]},{10:32,16:[1,5],17:[1,6],18:[1,7]},{7:[2,10],9:[2,10],15:[1,24]},{7:[2,12],9:[2,12],15:[2,12]},{7:[2,14],9:[2,14],11:[1,33],15:[2,14]},{7:[2,15],9:[2,15],15:[2,15]},{5:[2,8],9:[2,8]},{10:34,16:[1,5],17:[1,6],18:[1,7]},{7:[2,16],9:[2,16],15:[2,16]}],
+defaultActions: {22:[2,2]},
 parseError: function parseError(str, hash) {
     throw new Error(str);
 },
@@ -1579,28 +1587,30 @@ var YYSTATE=YY_START
 switch($avoiding_name_collisions) {
 case 0:/* skip whitespace */
 break;
-case 1:return 15
+case 1:return 16
 break;
-case 2:return 16
+case 2:return 17
 break;
 case 3:return 5
 break;
 case 4:return 11
 break;
-case 5:return 14
+case 5:return 15
 break;
 case 6:return 9
 break;
-case 7:return 17
+case 7:return 18
 break;
-case 8:return 7
+case 8:return 12
 break;
-case 9:return 'INVALID'
+case 9:return 7
+break;
+case 10:return 'INVALID'
 break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:")/,/^(?:$)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:")/,/^(?:\/)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;
 function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
@@ -1696,12 +1706,20 @@ if (typeof module !== 'undefined' && require.main === module) {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           say('IDom impl', node, args);
-          return node.setContent(args);
+          return node.setContent(args[0]);
         },
         alert: function() {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           return alert.apply(null, args);
+        },
+        click: function(handler) {
+          return node.on('click', handler);
+        },
+        say: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return say.apply(null, args);
         }
       };
     })(node);
@@ -1773,7 +1791,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 }).call(this);
 }, "dna": function(exports, require, module) {(function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
   var __slice = Array.prototype.slice;
 
   DEBUG = true;
@@ -1792,29 +1810,71 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   parse_genome = (require('genome-parser')).parse;
 
-  _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl, dispatch_handler = _ref.dispatch_handler;
+  _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl;
 
   _ref2 = require('protocols'), DEFAULT_PROTOCOLS = _ref2.DEFAULT_PROTOCOLS, get_protocol = _ref2.get_protocol;
 
   CELLS = {};
 
+  dispatch_handler = function(ns, name, cell) {
+    var handler, method_invariants;
+    method_invariants = cell.receptors[name];
+    if (method_invariants) {
+      if (method_invariants.length === 1 && !ns) {
+        handler = method_invariants[0];
+      } else {
+        handler = (cell.receptors[name].filter(function(m) {
+          return m.ns === ns;
+        }))[0];
+      }
+      if (handler) {
+        return handler;
+      } else {
+        say("Handler missing", {
+          ns: ns,
+          name: name,
+          cell: cell
+        });
+        throw "Handler missing";
+      }
+    } else {
+      say("Handler missing", {
+        ns: ns,
+        name: name,
+        cell: cell
+      });
+      throw "Handler missing";
+    }
+  };
+
   synthesize_cell = function(node, protocols) {
     var all_the_protocols, proto_cell;
-    node.id || (node.id = Y.guid());
+    node.id || (node.id = node.get('id') || Y.guid());
     proto_cell = {
       id: node.id,
-      receptors: {}
+      node: node,
+      receptors: {},
+      impls: {}
     };
     all_the_protocols = _.uniq(DEFAULT_PROTOCOLS.concat(protocols));
     all_the_protocols.map(function(protocol) {
-      var impl_inst, p;
+      var p;
       p = get_protocol(protocol);
-      impl_inst = dispatch_impl(protocol, node);
-      if (p && impl_inst) {
+      proto_cell.impls[protocol] = dispatch_impl(protocol, node);
+      if (p && proto_cell.impls[protocol]) {
         return p.map(function(_arg) {
-          var args, method;
+          var args, m, method;
           method = _arg[0], args = _arg[1];
-          return proto_cell.receptors[method] = impl_inst[method];
+          m = {
+            name: method,
+            ns: protocol,
+            impl: proto_cell.impls[protocol][method]
+          };
+          if (proto_cell.receptors[method]) {
+            return proto_cell.receptors[method].push(m);
+          } else {
+            return proto_cell.receptors[method] = [m];
+          }
         });
       }
     });
@@ -1829,22 +1889,23 @@ if (typeof module !== 'undefined' && require.main === module) {
     return CELLS[id];
   };
 
-  get_cell_or_this = function(node, ns) {
+  get_cell_or_this = function(node, scope_id) {
     var a_node, cell;
-    if (ns === THIS) {
-      return get_create_cell(node);
-    } else if (cell = get_cell(ns)) {
+    say('>>>', node, scope_id);
+    if (scope_id === THIS) {
+      return get_create_cell(node.id, node);
+    } else if (cell = get_cell(scope_id)) {
       return cell;
-    } else if (a_node = Y.one("#" + ns)) {
-      return get_create_cell(a_node);
+    } else if (a_node = Y.one("#" + scope_id)) {
+      return get_create_cell(a_node.id, a_node);
     } else {
       return null;
     }
   };
 
-  get_create_cell = function(node) {
+  get_create_cell = function(id, node) {
     var cell;
-    if (cell = get_cell(node.id)) {
+    if (cell = get_cell(id)) {
       return cell;
     } else {
       cell = synthesize_cell(node, DEFAULT_PROTOCOLS);
@@ -1853,32 +1914,46 @@ if (typeof module !== 'undefined' && require.main === module) {
     }
   };
 
-  parse_ast_node = function(handler, current_node) {
-    var current_cell, handler_name, handler_ns, handler_type, handler_value, _ref3, _ref4, _ref5, _ref6;
-    handler_name = (_ref3 = handler.method) != null ? _ref3.name : void 0;
-    handler_type = (_ref4 = handler.method) != null ? _ref4.type : void 0;
-    handler_value = (_ref5 = handler.method) != null ? _ref5.value : void 0;
-    handler_ns = (_ref6 = handler.ns) != null ? _ref6.name : void 0;
-    current_cell = handler_ns === THIS ? get_create_cell(current_node) : get_create_cell(current_node.ancestor("[data-" + DA_EXTEND + "]"));
-    switch (handler_type) {
+  parse_ast_handler_node = function(handler, current_cell) {
+    var cell, method, ns, scope, x;
+    ns = handler.ns, method = handler.method, scope = handler.scope;
+    cell = (function() {
+      if (!scope || scope.name === THIS) {
+        return current_cell;
+      } else if (x = get_cell(scope.name)) {
+        return x;
+      } else {
+        say("Unknown cell referenced in handler", handler);
+        throw "Unknown cell referenced in handler";
+      }
+    })();
+    switch (method.type) {
       case 'string':
-        return function() {
-          return handler_value;
+        return {
+          impl: function() {
+            return method.value;
+          }
         };
       case 'number':
-        return function() {
-          return handler_value;
+        return {
+          impl: function() {
+            return method.value;
+          }
         };
       case 'list':
-        return function() {
-          return handler_value;
+        return {
+          impl: function() {
+            return method.value;
+          }
         };
       case 'hashmap':
-        return function() {
-          return handler_value;
+        return {
+          impl: function() {
+            return method.value;
+          }
         };
       default:
-        return dispatch_handler(current_cell, handler_ns, handler_name);
+        return dispatch_handler(ns != null ? ns.name : void 0, method.name, cell);
     }
   };
 
@@ -1898,31 +1973,32 @@ if (typeof module !== 'undefined' && require.main === module) {
       return save_cell(cell);
     });
     gene_expression_matrices.each(function(node) {
-      var handlers, subscriptions;
-      subscriptions = parse_genome(node.getData(DA_SUBSCRIBE));
-      say("Subscriptions for", node, ":", subscriptions);
-      handlers = subscriptions.handlers.map(function(h) {
+      var cell, handlers, subscriptions;
+      cell = get_create_cell(node.id, node);
+      subscriptions = parse_genome(cell.node.getData(DA_SUBSCRIBE));
+      say("Subscriptions for", cell, ":", subscriptions);
+      handlers = subscriptions.handlers.map(function(handlr) {
         var handler_chain;
-        if (Array.isArray(h)) {
-          handler_chain = h.map(function(z) {
-            return parse_ast_node(z, node);
+        if (Array.isArray(handlr)) {
+          handler_chain = handlr.map(function(x) {
+            return (parse_ast_handler_node(x, cell)).impl;
           });
-          return _.compose.apply(_, handler_chain);
+          return _.compose.apply(_, handler_chain.reverse());
         } else {
-          return parse_ast_node(h, node);
+          return parse_ast_handler_node(handlr, cell);
         }
       });
-      return subscriptions.events.map(function(e) {
-        var event_name, event_ns, _ref3, _ref4;
-        event_name = (_ref3 = e.event) != null ? _ref3.name : void 0;
-        event_ns = (_ref4 = e.ns) != null ? _ref4.name : void 0;
-        return handlers.map(function(h) {
-          var cell;
-          if (event_ns) {
-            cell = get_cell_or_this(node, event_ns);
-            return cell.receptors[event_name](h);
+      return subscriptions.events.map(function(_arg) {
+        var event, ns, scope;
+        ns = _arg.ns, event = _arg.event, scope = _arg.scope;
+        return handlers.map(function(handlr) {
+          var event_scope_cell, h;
+          event_scope_cell = get_cell_or_this(cell, scope.name);
+          if (scope) {
+            h = dispatch_handler(ns != null ? ns.name : void 0, event.name, event_scope_cell);
+            return h.impl(handlr);
           } else {
-            return node.on(event_name, h);
+            return event_scope_cell.node.on(event.name, handlr);
           }
         });
       });
@@ -1941,7 +2017,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
 }).call(this);
 }, "libprotocol": function(exports, require, module) {(function() {
-  var Implementations, dispatch_handler, dispatch_impl, register_protocol_impl, say;
+  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say;
   var __slice = Array.prototype.slice;
 
   say = function() {
@@ -1952,13 +2028,21 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   Implementations = {};
 
+  THIS = 'this';
+
   register_protocol_impl = function(protocol, impl) {
+    say("Registering an implementation for the protocol " + protocol);
     return Implementations[protocol] = impl;
   };
 
   dispatch_impl = function() {
     var node, protocol, rest;
     protocol = arguments[0], node = arguments[1], rest = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    try {
+      require(protocol);
+    } catch (e) {
+      say("Can't find a single module for an implementation of the protocol '" + protocol + "'");
+    }
     if (Implementations[protocol]) {
       return Implementations[protocol](node);
     } else {
@@ -1966,21 +2050,14 @@ if (typeof module !== 'undefined' && require.main === module) {
     }
   };
 
-  dispatch_handler = function(current_cell, handler_ns, fn) {
-    if (current_cell.receptors[fn]) {
-      return current_cell.receptors[fn];
-    } else {
-      say("Handler missing for " + fn + " @ " + handler_ns);
-      return function() {
-        return say("Missing handler " + fn + " @ " + handler_ns);
-      };
-    }
+  dump_impls = function() {
+    return say("Currently registered implementations:", Implementations);
   };
 
   module.exports = {
     register_protocol_impl: register_protocol_impl,
     dispatch_impl: dispatch_impl,
-    dispatch_handler: dispatch_handler
+    dump_impls: dump_impls
   };
 
 }).call(this);
@@ -1990,7 +2067,7 @@ if (typeof module !== 'undefined' && require.main === module) {
   Protocols = {
     IDraggable: [['setX', ['x']], ['setY', ['y']], ['setXY', ['x', 'y']], ['onDragStart', ['f']], ['onDragStop', ['f']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
-    IDom: [['setContent', ['new_content']], ['alert', ['m']]]
+    IDom: [['setContent', ['new_content']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']]]
   };
 
   DEFAULT_PROTOCOLS = ['IDom'];
