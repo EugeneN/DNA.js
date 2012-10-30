@@ -1,30 +1,41 @@
 <html>
   <style type="text/css">
-    .augmented-structure {
+    .cell {
       width: 150px;
       height: 150px;
       background-color: lightgreen;
       border: 1px solid green;
     }
+    span {
+      display: block;
+    }
   </style>
 
   <body>
     <div class="some-outer-structure">
-      <div class="augmented-structure"
+      <div class="cell"
            id="zzz"
            data-extend-with="IDraggable IPositionReporter">
 
         <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">
           here be x
-        </span> <br />
+        </span>
         <span data-subscribe="onDragStop@zzz : getY@zzz | setContent@this">
           here be y
-        </span> <br />
+        </span>
 
-        <button data-subscribe='click@this : "Helloworld" | alert'>Go home</button>
+        <button data-subscribe='click@this : "Hello_world" | say'>Say hello</button>
       </div>
     </div>
-    <span data-no-subscribe="zzz@my_event,click:zzz.getX|setVisualValue|setBLValue">here be x</span>
+
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
   </body>
 
   <script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script>

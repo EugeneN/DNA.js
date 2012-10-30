@@ -1,4 +1,4 @@
-/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Tue Oct 30 2012 17:22:08 GMT+0200 (EET) */
+/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Tue Oct 30 2012 17:37:21 GMT+0200 (EET) */
 /* ZB:underscore.js */
 //     Underscore.js 1.4.2
 //     http://underscorejs.org
@@ -1958,8 +1958,9 @@ if (typeof module !== 'undefined' && require.main === module) {
   };
 
   ep = function(Y) {
-    var cell_matrices, gene_expression_matrices;
+    var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
+    START = new Date;
     if (DEBUG) window.Y = Y;
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
@@ -2003,7 +2004,7 @@ if (typeof module !== 'undefined' && require.main === module) {
         });
       });
     });
-    return say("Cells synthesis complete.");
+    return say("Cells synthesis completed in " + (new Date - START) + "ms.");
   };
 
   module.exports = {

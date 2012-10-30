@@ -319,8 +319,9 @@
   };
 
   ep = function(Y) {
-    var cell_matrices, gene_expression_matrices;
+    var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
+    START = new Date;
     if (DEBUG) window.Y = Y;
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
@@ -364,7 +365,7 @@
         });
       });
     });
-    return say("Cells synthesis complete.");
+    return say("Cells synthesis completed in " + (new Date - START) + "ms.");
   };
 
   module.exports = {

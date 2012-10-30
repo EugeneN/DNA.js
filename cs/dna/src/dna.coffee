@@ -111,6 +111,7 @@ parse_ast_handler_node = (handler, current_cell) ->
 # Entry point
 ep = (Y) ->
     say 'Cells synthesis started'
+    START = new Date
 
     window.Y = Y if DEBUG
 
@@ -151,7 +152,7 @@ ep = (Y) ->
 
 
 
-    say "Cells synthesis complete."
+    say "Cells synthesis completed in #{new Date - START}ms."
 
 module.exports =
     start_synthesis: ->
