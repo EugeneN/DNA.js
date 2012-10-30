@@ -8,6 +8,13 @@ Protocols =
         ['onDragStop', ['f']]
     ]
 
+    IMovable: [
+        ['moveUp', ['x']]
+        ['moveDown', ['x']]
+        ['moveLeft', ['x']]
+        ['moveRight', ['x']]
+    ]
+
     IPositionReporter: [
         ['getX', []]
         ['getY', []]
@@ -19,6 +26,8 @@ Protocols =
         ['alert', ['msg']]
         ['click', ['handler']]
         ['say', ['msgs']]
+        ['appendContent', ['content']]
+        ['kill', []]
     ]
 
 DEFAULT_PROTOCOLS = ['IDom']

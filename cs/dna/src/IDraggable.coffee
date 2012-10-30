@@ -7,11 +7,20 @@ register_protocol_impl 'IDraggable', (node) ->
         dd = new Y.DD.Drag {node}
 
         {
-            setX: (x) -> node.setX x
-            setY: (y) -> node.setY y
+            setX: (x) -> node.setX x + 10
+            setY: (y) -> node.setY y + 10
             setXY: (xy) -> node.setXY xy
             onDragStart: (f) -> dd.on 'drag:start', f
             onDragStop: (f) -> dd.on 'drag:end', f
+        }
+
+register_protocol_impl 'IMovable', (node) ->
+    do (node) ->
+        {
+            moveUp: (x) -> node.setY(node.getY() - parseInt(x))
+            moveDown: (x) -> node.setY(node.getY() + parseInt(x))
+            moveLeft: (x) -> node.setX(node.getX() - parseInt(x))
+            moveRight: (x) -> node.setX(node.getX() + parseInt(x))
         }
 
 register_protocol_impl 'IPositionReporter', (node) ->

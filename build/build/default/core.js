@@ -1,4 +1,4 @@
-/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Tue Oct 30 2012 17:37:21 GMT+0200 (EET) */
+/* Cafe 4db6bf9b-da43-4620-a662-31874782bdd0 Tue Oct 30 2012 19:09:13 GMT+0200 (EET) */
 /* ZB:underscore.js */
 //     Underscore.js 1.4.2
 //     http://underscorejs.org
@@ -1705,8 +1705,10 @@ if (typeof module !== 'undefined' && require.main === module) {
         setContent: function() {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-          say('IDom impl', node, args);
           return node.setContent(args[0]);
+        },
+        appendContent: function(content) {
+          return node.append("<div>" + content + "</div>");
         },
         alert: function() {
           var args;
@@ -1720,6 +1722,15 @@ if (typeof module !== 'undefined' && require.main === module) {
           var args;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           return say.apply(null, args);
+        },
+        proxylog: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          say.apply(null, args);
+          return args;
+        },
+        kill: function() {
+          return say('kill');
         }
       };
     })(node);
@@ -1746,10 +1757,10 @@ if (typeof module !== 'undefined' && require.main === module) {
       });
       return {
         setX: function(x) {
-          return node.setX(x);
+          return node.setX(x + 10);
         },
         setY: function(y) {
-          return node.setY(y);
+          return node.setY(y + 10);
         },
         setXY: function(xy) {
           return node.setXY(xy);
@@ -1759,6 +1770,25 @@ if (typeof module !== 'undefined' && require.main === module) {
         },
         onDragStop: function(f) {
           return dd.on('drag:end', f);
+        }
+      };
+    })(node);
+  });
+
+  register_protocol_impl('IMovable', function(node) {
+    return (function(node) {
+      return {
+        moveUp: function(x) {
+          return node.setY(node.getY() - parseInt(x));
+        },
+        moveDown: function(x) {
+          return node.setY(node.getY() + parseInt(x));
+        },
+        moveLeft: function(x) {
+          return node.setX(node.getX() - parseInt(x));
+        },
+        moveRight: function(x) {
+          return node.setX(node.getX() + parseInt(x));
         }
       };
     })(node);
@@ -1891,7 +1921,6 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   get_cell_or_this = function(node, scope_id) {
     var a_node, cell;
-    say('>>>', node, scope_id);
     if (scope_id === THIS) {
       return get_create_cell(node.id, node);
     } else if (cell = get_cell(scope_id)) {
@@ -2067,8 +2096,9 @@ if (typeof module !== 'undefined' && require.main === module) {
 
   Protocols = {
     IDraggable: [['setX', ['x']], ['setY', ['y']], ['setXY', ['x', 'y']], ['onDragStart', ['f']], ['onDragStop', ['f']]],
+    IMovable: [['moveUp', ['x']], ['moveDown', ['x']], ['moveLeft', ['x']], ['moveRight', ['x']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
-    IDom: [['setContent', ['new_content']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']]]
+    IDom: [['setContent', ['new_content']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']], ['appendContent', ['content']], ['kill', []]]
   };
 
   DEFAULT_PROTOCOLS = ['IDom'];

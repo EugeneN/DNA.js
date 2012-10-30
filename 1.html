@@ -5,6 +5,10 @@
       height: 150px;
       background-color: lightgreen;
       border: 1px solid green;
+      display: inline-block;
+      padding: 5px;
+      overflow: auto;
+
     }
     span {
       display: block;
@@ -14,28 +18,63 @@
   <body>
     <div class="some-outer-structure">
       <div class="cell"
-           id="zzz"
-           data-extend-with="IDraggable IPositionReporter">
+           id="cell1"
+           data-extend-with="IDraggable IPositionReporter IMovable">
 
-        <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">
+        <b>Cell 1</b>
+
+        <span data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this">
           here be x
         </span>
-        <span data-subscribe="onDragStop@zzz : getY@zzz | setContent@this">
+        <span data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this">
           here be y
         </span>
 
         <button data-subscribe='click@this : "Hello_world" | say'>Say hello</button>
+
+        <button id="btn1" data-no-subscribe='click@this : "Hello_from_cell1" | appendContent@cell2'>Say hello to cell2</button>
+      </div>
+
+      <div class="cell"
+           id="cell2"
+           data-subscribe='click@btn1 : "Btn1_clicked" | appendContent@this'
+           data-extend-with="IDraggable IPositionReporter IMovable">
+
+        <b>Cell 2</b>
+
+        <span data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this">
+          here be x
+        </span>
+        <span data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this">
+          here be y
+        </span>
+
+        <button data-subscribe='click@this : "Hello_world" | say'>Say hello</button>
+        <button data-subscribe='click@this : "Hello_from_cell2" | appendContent@cell1'>Say hello to cell1</button>
+
+        <button data-subscribe='click@this : "5" | moveLeft@cell1'>&larr;</button>
+        <button data-subscribe='click@this : "5" | moveUp@cell1'>&uarr;</button>
+        <button data-subscribe='click@this : "5" | moveDown@cell1'>&darr;</button>
+        <button data-subscribe='click@this : "5" | moveRight@cell1'>&rarr;</button>
+
       </div>
     </div>
 
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
-    <span data-subscribe="onDragStop@zzz : getX@zzz | setContent@this">here be x</span>
+    <button data-subscribe='click@this : "5" | moveLeft@cell1 | "5" | moveLeft@cell2'>&larr;</button>
+    <button data-subscribe='click@this : "5" | moveUp@cell1 | "5" | moveUp@cell2'>&uarr;</button>
+    <button data-subscribe='click@this : "5" | moveDown@cell1 | "5" | moveDown@cell2'>&darr;</button>
+    <button data-subscribe='click@this : "5" | moveRight@cell1 | "5" | moveRight@cell2'>&rarr;</button>
+
+    <span data-subscribe='click@this : kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
+
+    <span data-subscribe='click@this : kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
+
   </body>
 
   <script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script>

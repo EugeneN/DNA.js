@@ -6,8 +6,10 @@ register_protocol_impl 'IDom', (node) ->
     do (node) ->
         {
             setContent: (args...) ->
-                say 'IDom impl', node, args
                 node.setContent args[0]
+
+            appendContent: (content) ->
+                node.append "<div>#{content}</div>"
 
             alert: (args...) ->
                 alert args...
@@ -17,6 +19,14 @@ register_protocol_impl 'IDom', (node) ->
 
             say: (args...) ->
                 say args...
+
+            proxylog: (args...) ->
+                say args...
+                args
+
+            kill: ->
+                say 'kill'
+                # node.remove()
 
         }
 

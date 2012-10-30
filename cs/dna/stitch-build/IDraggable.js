@@ -18,10 +18,10 @@
       });
       return {
         setX: function(x) {
-          return node.setX(x);
+          return node.setX(x + 10);
         },
         setY: function(y) {
-          return node.setY(y);
+          return node.setY(y + 10);
         },
         setXY: function(xy) {
           return node.setXY(xy);
@@ -31,6 +31,25 @@
         },
         onDragStop: function(f) {
           return dd.on('drag:end', f);
+        }
+      };
+    })(node);
+  });
+
+  register_protocol_impl('IMovable', function(node) {
+    return (function(node) {
+      return {
+        moveUp: function(x) {
+          return node.setY(node.getY() - parseInt(x));
+        },
+        moveDown: function(x) {
+          return node.setY(node.getY() + parseInt(x));
+        },
+        moveLeft: function(x) {
+          return node.setX(node.getX() - parseInt(x));
+        },
+        moveRight: function(x) {
+          return node.setX(node.getX() + parseInt(x));
         }
       };
     })(node);

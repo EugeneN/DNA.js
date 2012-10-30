@@ -99,7 +99,6 @@
 
   get_cell_or_this = function(node, scope_id) {
     var a_node, cell;
-    say('>>>', node, scope_id);
     if (scope_id === THIS) {
       return get_create_cell(node.id, node);
     } else if (cell = get_cell(scope_id)) {

@@ -67,8 +67,6 @@ save_cell = (cell) -> CELLS[cell.id] = cell
 get_cell = (id) -> CELLS[id]
 
 get_cell_or_this = (node, scope_id) ->
-    say '>>>', node, scope_id
-
     if scope_id is THIS
         get_create_cell node.id, node
     else if cell = get_cell scope_id
