@@ -1,6 +1,6 @@
 (function() {
-  var Implementations, dispatch_handler, dispatch_impl, register_protocol_impl, say;
-  var __slice = Array.prototype.slice;
+  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say,
+    __slice = [].slice;
 
   say = function() {
     var a;
@@ -10,13 +10,21 @@
 
   Implementations = {};
 
+  THIS = 'this';
+
   register_protocol_impl = function(protocol, impl) {
+    say("Registering an implementation for the protocol " + protocol);
     return Implementations[protocol] = impl;
   };
 
   dispatch_impl = function() {
     var node, protocol, rest;
     protocol = arguments[0], node = arguments[1], rest = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
+    try {
+      require(protocol);
+    } catch (e) {
+      say("Can't find a single module for an implementation of the protocol '" + protocol + "'");
+    }
     if (Implementations[protocol]) {
       return Implementations[protocol](node);
     } else {
@@ -24,21 +32,14 @@
     }
   };
 
-  dispatch_handler = function(current_cell, handler_ns, fn) {
-    if (current_cell.receptors[fn]) {
-      return current_cell.receptors[fn];
-    } else {
-      say("Handler missing for " + fn + " @ " + handler_ns);
-      return function() {
-        return say("Missing handler " + fn + " @ " + handler_ns);
-      };
-    }
+  dump_impls = function() {
+    return say("Currently registered implementations:", Implementations);
   };
 
   module.exports = {
     register_protocol_impl: register_protocol_impl,
     dispatch_impl: dispatch_impl,
-    dispatch_handler: dispatch_handler
+    dump_impls: dump_impls
   };
 
 }).call(this);

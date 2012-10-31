@@ -10,6 +10,7 @@
 "|"                   return 'COMPOSE'
 ","                   return 'ALSO'
 \"                    return 'QUOTE'
+"/"                   return 'NS_SEP'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
 
@@ -36,13 +37,17 @@ event_expr
 
 single_event_expr
     : expr
-        %{ $$ = [{event: $1, ns: undefined}]; %}
+        %{ $$ = [{ns: undefined, event: $1, scope: undefined}]; %}
     | expr AT expr
-        %{ $$ = [{event: $1, ns: $3}]; %}
+        %{ $$ = [{ns: undefined, event: $1, scope: $3}]; %}
+    | expr NS_SEP expr
+        {{ $$ = [{ns: $1, event: $3, scope: undefined}]; }}
+    | expr NS_SEP expr AT expr
+        {{ $$ = [{ns: $1, event: $3, scope: $5}]; }}
     ;
 
 
-handler_expr    
+handler_expr
     : composed_handler_expr
         %{ $$ = [$1]; %}
     | handler_expr ALSO composed_handler_expr
@@ -58,9 +63,13 @@ composed_handler_expr
 
 method
     : expr
-        {{ $$ = {method: $1, ns: undefined}; }}
+        {{ $$ = {ns: undefined, method: $1, scope: undefined}; }}
+    | expr NS_SEP expr
+        {{ $$ = {ns: $1, method: $3, scope: undefined} }}
     | expr AT expr
-        {{ $$ = {method: $1, ns: $3}; }}
+        {{ $$ = {ns: undefined, method: $1, scope: $3}; }}
+    | expr NS_SEP expr AT expr
+        {{ $$ = {ns: $1, method: $3, scope: $5}; }}
     ;
 
 expr
