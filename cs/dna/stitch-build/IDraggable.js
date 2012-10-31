@@ -1,6 +1,6 @@
 (function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 

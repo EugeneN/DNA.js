@@ -3,7 +3,9 @@
 %%
 
 \s+                   /* skip whitespace */
-[A-Za-z0-9_]+\b       return 'IDENT'
+[A-Za-z0-9_]+\b       return 'IDENTIFIER'
+"("                   return 'OPEN_PAREN'
+")"                   return 'CLOSE_PAREN'
 "^"                   return 'MACRO'
 ":"                   return 'BIND'
 "@"                   return 'AT'
@@ -11,21 +13,32 @@
 ","                   return 'ALSO'
 \"                    return 'QUOTE'
 "/"                   return 'NS_SEP'
+
+";"                   return 'EXPR_SEP'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
 
 /lex
 
-%start directive
+%start program
 
 %%
 
-directive
+program
     :
-    | event_expr BIND handler_expr EOF
-        %{ $$ = {events: $1, handlers: $3};
+    | expression EOF
+        %{ $$ = [{events: $1, handlers: $3}]; %}
+    | program EXPR_SEP expression EOF
+        %{ $$ = ($1).concat($3);
            console.log($$);
            return $$; %}
+    ;
+
+expression
+    : event_expr BIND handler_expr
+        %{ $$ = {events: $1, handlers: $3}; %}
+    : event_expr BIND handler_expr EXPR_SEP
+        %{ $$ = {events: $1, handlers: $3}; %}
     ;
 
 event_expr
@@ -73,10 +86,10 @@ method
     ;
 
 expr
-    : IDENT
+    : IDENTIFIER
         {{ $$ = { name: $1 }; }}
-    | MACRO IDENT
+    | MACRO IDENTIFIER
         {{ $$ = { name: $2, macro: true} }}
-    | QUOTE IDENT QUOTE
+    | QUOTE IDENTIFIER QUOTE
         {{ $$ = { type: "string", value: $2 } }}
     ;

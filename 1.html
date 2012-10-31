@@ -14,6 +14,9 @@
       span {
         display: block;
       }
+      .yui3-calendar {
+        position: absolute;
+      }
     </style>
 
      <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic,700italic">
@@ -65,48 +68,52 @@
         <button data-subscribe='click@this : "5" | moveRight@cell1'>&rarr;</button>
 
       </div>
+
+      <div style="display: inline-block;">
+        <input type="text"
+             id="datef"
+             placeholder="Select a date"
+             data-extend-with="ICalendar"
+             data-subscribe='
+              click@this : "aaa"|toggle
+
+              '
+             data-popup-el=""
+             />
+      </div>
     </div>
 
     <button data-subscribe='click@this : "5" | moveLeft@cell1 | "5" | moveLeft@cell2'>&larr;</button>
     <button data-subscribe='click@this : "5" | moveUp@cell1 | "5" | moveUp@cell2'>&uarr;</button>
     <button data-subscribe='click@this : "5" | moveDown@cell1 | "5" | moveDown@cell2'>&darr;</button>
     <button data-subscribe='click@this : "5" | moveRight@cell1 | "5" | moveRight@cell2'>&rarr;</button>
+    <br>
+    <button data-subscribe='click@this : "qqq" | kill@cell1, "disabled" | setAttr@this'>Kill cell1</button>
 
-    <span data-subscribe='click@this : kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent@this"></b></span>
 
-    <span data-subscribe='click@this : kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
-    <span data-subscribe='click@this : kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
+    <span data-subscribe='click@this : "qqq" | kill@this'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent@this"></b></span>
 
 
     <div class="yui3-g">
       <!--
-      <input type="text" 
+      <input type="text"
              placeholder="Name"
              data-extend-with="IInputFilter"
              data-input-filter-rules="[A-Za-z]+" />
 
-      <input type="text" 
+      <input type="text"
              placeholder="Age"
              data-extend-with="IInputFilter"
              data-input-filter-rules="[0-9]+" />
       -->
-      <input type="text" 
-             id="datef"
-             placeholder="Sex" 
-             data-subscribe="
-                onSelectionChange@cal : setValue@this;
-                click : show@cal;"
-             />
 
-      <div  data-extend-with="ICalendar"
-             data-calendar-select-date="1-2-2000" 
-             id="cal"
-             ></div>      
     </div>
 
   </body>

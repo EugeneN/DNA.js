@@ -1,6 +1,6 @@
 (function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref1,
-    __slice = [].slice;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
+  var __slice = Array.prototype.slice;
 
   DEBUG = true;
 
@@ -20,7 +20,7 @@
 
   _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl;
 
-  _ref1 = require('protocols'), DEFAULT_PROTOCOLS = _ref1.DEFAULT_PROTOCOLS, get_protocol = _ref1.get_protocol;
+  _ref2 = require('protocols'), DEFAULT_PROTOCOLS = _ref2.DEFAULT_PROTOCOLS, get_protocol = _ref2.get_protocol;
 
   CELLS = {};
 
@@ -168,9 +168,7 @@
     var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
     START = new Date;
-    if (DEBUG) {
-      window.Y = Y;
-    }
+    if (DEBUG) window.Y = Y;
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
     cell_matrices.each(function(node) {
@@ -218,7 +216,7 @@
 
   module.exports = {
     start_synthesis: function() {
-      return YUI().use('node', 'event', 'dd', 'calendar', ep);
+      return YUI().use('dom', 'node', 'event', 'dd', 'calendar', ep);
     },
     dump_cells: function() {
       return say('Cells synthesized for this document:', CELLS);

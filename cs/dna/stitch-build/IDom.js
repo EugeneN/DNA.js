@@ -1,6 +1,6 @@
 (function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -20,6 +20,10 @@
         },
         setValue: function(v) {
           return node.set('value', v);
+        },
+        setAttr: function(attr) {
+          say('setattr');
+          return node.setAttribute(attr);
         },
         appendContent: function(content) {
           return node.append("<div>" + content + "</div>");
@@ -44,7 +48,8 @@
           return args;
         },
         kill: function() {
-          return say('kill');
+          say('kill');
+          return node.remove();
         }
       };
     })(node);

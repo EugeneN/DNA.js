@@ -29,11 +29,13 @@ Protocols =
         ['say', ['msgs']]
         ['appendContent', ['content']]
         ['kill', []]
+        ['setAttr', ['attr']]
     ]
 
     ICalendar: [
         ['show', []]
         ['hide', []]
+        ['toggle', []]
         ['setDate', ['date']]
         ['onSelectionChange', ['f']]
     ]

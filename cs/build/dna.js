@@ -49,8 +49,8 @@
   }
   return this.require.define;
 }).call(this)({"ICalendar": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -62,18 +62,31 @@
 
   register_protocol_impl('ICalendar', function(node) {
     return (function(node) {
-      var cal;
+      var cal, cont;
+      cont = Y.Node.create('<span>');
+      node.insert(cont, 'after');
       cal = new Y.Calendar({
-        contentBox: node,
+        contentBox: cont,
         width: '340px'
       });
-      cal.render();
+      cal.render().hide();
       return {
         show: function() {
-          return cal.show();
+          cal.show();
+          return cal.visible = true;
         },
         hide: function() {
-          return cal.hide();
+          cal.hide();
+          return cal.visible = false;
+        },
+        toggle: function() {
+          if (cal.visible) {
+            cal.hide();
+            return cal.visible = false;
+          } else {
+            cal.show();
+            return cal.visible = true;
+          }
         },
         setDate: function() {
           var args;
@@ -82,8 +95,12 @@
         },
         onSelectionChange: function(f) {
           return cal.on('selectionChange', function(ev) {
+            say('selectionChange');
             return f.impl(ev.newSelection[0]);
           });
+        },
+        getContainer: function() {
+          return cont;
         }
       };
     })(node);
@@ -91,8 +108,8 @@
 
 }).call(this);
 }, "IDom": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -112,6 +129,10 @@
         },
         setValue: function(v) {
           return node.set('value', v);
+        },
+        setAttr: function(attr) {
+          say('setattr');
+          return node.setAttribute(attr);
         },
         appendContent: function(content) {
           return node.append("<div>" + content + "</div>");
@@ -136,7 +157,8 @@
           return args;
         },
         kill: function() {
-          return say('kill');
+          say('kill');
+          return node.remove();
         }
       };
     })(node);
@@ -144,8 +166,8 @@
 
 }).call(this);
 }, "IDraggable": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -227,8 +249,8 @@
 
 }).call(this);
 }, "dna": function(exports, require, module) {(function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref1,
-    __slice = [].slice;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
+  var __slice = Array.prototype.slice;
 
   DEBUG = true;
 
@@ -248,7 +270,7 @@
 
   _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl;
 
-  _ref1 = require('protocols'), DEFAULT_PROTOCOLS = _ref1.DEFAULT_PROTOCOLS, get_protocol = _ref1.get_protocol;
+  _ref2 = require('protocols'), DEFAULT_PROTOCOLS = _ref2.DEFAULT_PROTOCOLS, get_protocol = _ref2.get_protocol;
 
   CELLS = {};
 
@@ -396,9 +418,7 @@
     var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
     START = new Date;
-    if (DEBUG) {
-      window.Y = Y;
-    }
+    if (DEBUG) window.Y = Y;
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
     cell_matrices.each(function(node) {
@@ -446,7 +466,7 @@
 
   module.exports = {
     start_synthesis: function() {
-      return YUI().use('node', 'event', 'dd', 'calendar', ep);
+      return YUI().use('dom', 'node', 'event', 'dd', 'calendar', ep);
     },
     dump_cells: function() {
       return say('Cells synthesized for this document:', CELLS);
@@ -455,8 +475,8 @@
 
 }).call(this);
 }, "libprotocol": function(exports, require, module) {(function() {
-  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say,
-    __slice = [].slice;
+  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   say = function() {
     var a;
@@ -506,8 +526,8 @@
     IDraggable: [['setX', ['x']], ['setY', ['y']], ['setXY', ['x', 'y']], ['onDragStart', ['f']], ['onDragStop', ['f']]],
     IMovable: [['moveUp', ['x']], ['moveDown', ['x']], ['moveLeft', ['x']], ['moveRight', ['x']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
-    IDom: [['setContent', ['new_content']], ['setValue', ['new_value']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']], ['appendContent', ['content']], ['kill', []]],
-    ICalendar: [['show', []], ['hide', []], ['setDate', ['date']], ['onSelectionChange', ['f']]]
+    IDom: [['setContent', ['new_content']], ['setValue', ['new_value']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']], ['appendContent', ['content']], ['kill', []], ['setAttr', ['attr']]],
+    ICalendar: [['show', []], ['hide', []], ['toggle', []], ['setDate', ['date']], ['onSelectionChange', ['f']]]
   };
 
   DEFAULT_PROTOCOLS = ['IDom'];

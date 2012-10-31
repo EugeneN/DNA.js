@@ -154,7 +154,7 @@ ep = (Y) ->
 
 module.exports =
     start_synthesis: ->
-        YUI().use 'node', 'event', 'dd', 'calendar', ep
+        YUI().use 'dom', 'node', 'event', 'dd', 'calendar', ep
 
     dump_cells: ->
         say 'Cells synthesized for this document:', CELLS

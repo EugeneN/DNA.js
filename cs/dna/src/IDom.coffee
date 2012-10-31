@@ -11,6 +11,10 @@ register_protocol_impl 'IDom', (node) ->
             setValue: (v) ->
                 node.set 'value', v
 
+            setAttr: (attr) ->
+                say 'setattr'
+                node.setAttribute attr
+
             appendContent: (content) ->
                 node.append "<div>#{content}</div>"
 
@@ -29,7 +33,7 @@ register_protocol_impl 'IDom', (node) ->
 
             kill: ->
                 say 'kill'
-                # node.remove()
+                node.remove()
 
         }
 
