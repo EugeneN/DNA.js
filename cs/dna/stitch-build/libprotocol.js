@@ -1,6 +1,6 @@
 (function() {
-  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say;
-  var __slice = Array.prototype.slice;
+  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say,
+    __slice = [].slice;
 
   say = function() {
     var a;

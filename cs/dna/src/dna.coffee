@@ -101,10 +101,24 @@ parse_ast_handler_node = (handler, current_cell) ->
         throw "Unknown cell referenced in handler"
 
     switch method.type
-        when 'string'    then {impl: -> method.value}
-        when 'number'    then {impl: -> method.value}
-        when 'list'      then {impl: -> method.value}
-        when 'hashmap'   then {impl: -> method.value}
+        when 'string'
+            impl: -> method.value
+        when 'number'
+            impl: -> method.value
+        when 'vector'      
+            impl: (idx, lastidx) -> 
+                if idx and not isNaN idx
+                    method.value[idx].value
+                else if idx and lastidx and not (isNaN idx) and not (isNaN lastidx)
+                    (i.value for i in method.value[idx...lastidx])
+                else
+                    (i.value for i in method.value)
+        when 'hashmap'
+            impl: (key) -> 
+                if key
+                    method.value[key]
+                else
+                    method.value
 
         else dispatch_handler ns?.name, method.name, cell
 

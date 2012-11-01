@@ -1,22 +1,24 @@
 %lex
 %%
 
-\s+                   /* skip whitespace */
-\"(\\.|[^\\"]*?)\"    return 'STRING'
-[A-Za-z0-9_]+\b       return 'IDENTIFIER'
-[0-9]+                return 'NUMBER'
-\"                    return 'DBLQUOTE'
-"("                   return '('
-")"                   return ')'
-"^"                   return '^'
-":"                   return ':'
-"@"                   return '@'
-"|"                   return '|'
-","                   return ','
-"/"                   return '/'
-";"                   return ';'
-<<EOF>>               return 'EOF'
-.                     return 'INVALID'
+\s+                    /* skip whitespace */
+[0-9]+                 return 'NUMBER'
+\"(\\.|[^\\"]*?)\"     return 'STRING'
+[A-Za-z_][A-Za-z0-9_]* return 'IDENTIFIER'
+\"                     return 'DBLQUOTE'
+"("                    return '('
+")"                    return ')'
+"["                    return '['
+"]"                    return ']'
+"^"                    return '^'
+":"                    return ':'
+"@"                    return '@'
+"|"                    return '|'
+","                    return ','
+"/"                    return '/'
+";"                    return ';'
+<<EOF>>                return 'EOF'
+.                      return 'INVALID'
 
 /lex
 
@@ -103,6 +105,19 @@ single_handler
 literal
     : IDENTIFIER
         {{ $$ = { name: $1 }; }}
+    | NUMBER
+        {{ $$ = { type: "number", value: parseInt($1, 10)}; }}
     | STRING
         {{ $$ = { type: "string", value: ($1).match('\"(\\.|[^\\"]*?)\"')[1] }; }}
+    | '[' item_list ']'
+        {{ $$ = { type: "vector", value: $2}; }}
+    ;
+
+item_list
+    : 
+        {{ $$ = []; }}    
+    | literal
+        {{ $$ = [$1]; }}
+    | item_list literal
+        {{ $$ = $1.concat($2); }}
     ;

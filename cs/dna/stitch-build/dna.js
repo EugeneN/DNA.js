@@ -1,6 +1,6 @@
 (function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, find_cell, get_cell, get_create_cell, get_create_cell_by_id, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
-  var __slice = Array.prototype.slice;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, find_cell, get_cell, get_create_cell, get_create_cell_by_id, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref1,
+    __slice = [].slice;
 
   DEBUG = true;
 
@@ -20,7 +20,7 @@
 
   _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl;
 
-  _ref2 = require('protocols'), DEFAULT_PROTOCOLS = _ref2.DEFAULT_PROTOCOLS, get_protocol = _ref2.get_protocol;
+  _ref1 = require('protocols'), DEFAULT_PROTOCOLS = _ref1.DEFAULT_PROTOCOLS, get_protocol = _ref1.get_protocol;
 
   CELLS = {};
 
@@ -152,16 +152,39 @@
             return method.value;
           }
         };
-      case 'list':
+      case 'vector':
         return {
-          impl: function() {
-            return method.value;
+          impl: function(idx, lastidx) {
+            var i, _i, _j, _len, _len1, _ref2, _ref3, _results, _results1;
+            if (idx && !isNaN(idx)) {
+              return method.value[idx].value;
+            } else if (idx && lastidx && !(isNaN(idx)) && !(isNaN(lastidx))) {
+              _ref2 = method.value.slice(idx, lastidx);
+              _results = [];
+              for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+                i = _ref2[_i];
+                _results.push(i.value);
+              }
+              return _results;
+            } else {
+              _ref3 = method.value;
+              _results1 = [];
+              for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+                i = _ref3[_j];
+                _results1.push(i.value);
+              }
+              return _results1;
+            }
           }
         };
       case 'hashmap':
         return {
-          impl: function() {
-            return method.value;
+          impl: function(key) {
+            if (key) {
+              return method.value[key];
+            } else {
+              return method.value;
+            }
           }
         };
       default:
@@ -173,7 +196,9 @@
     var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
     START = new Date;
-    if (DEBUG) window.Y = Y;
+    if (DEBUG) {
+      window.Y = Y;
+    }
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
     cell_matrices.each(function(node) {
