@@ -52,55 +52,64 @@
 var parser = (function(){
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"directive":3,"event_expr":4,"BIND":5,"handler_expr":6,"EOF":7,"single_event_expr":8,"ALSO":9,"expr":10,"AT":11,"NS_SEP":12,"composed_handler_expr":13,"method":14,"COMPOSE":15,"IDENT":16,"MACRO":17,"QUOTE":18,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"BIND",7:"EOF",9:"ALSO",11:"AT",12:"NS_SEP",15:"COMPOSE",16:"IDENT",17:"MACRO",18:"QUOTE"},
-productions_: [0,[3,0],[3,4],[4,1],[4,3],[8,1],[8,3],[8,3],[8,5],[6,1],[6,3],[13,1],[13,3],[14,1],[14,3],[14,3],[14,5],[10,1],[10,2],[10,3]],
+symbols_: {"error":2,"program":3,"text":4,"EOF":5,"expression":6,";":7,"event_binding_def":8,"events":9,":":10,"handlers":11,"event":12,",":13,"literal":14,"/":15,"@":16,"handler":17,"single_handler":18,"|":19,"WORD":20,"STRING":21,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",7:";",10:":",13:",",15:"/",16:"@",19:"|",20:"WORD",21:"STRING"},
+productions_: [0,[3,0],[3,2],[4,1],[4,3],[6,1],[6,1],[8,3],[9,1],[9,3],[12,1],[12,3],[12,3],[12,5],[11,1],[11,3],[17,1],[17,3],[18,1],[18,3],[18,3],[18,5],[14,1],[14,1]],
 performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
 var $0 = $$.length - 1;
 switch (yystate) {
-case 2: this.$ = {events: $$[$0-3], handlers: $$[$0-1]};
-           console.log(this.$);
-           return this.$; 
+case 2: 
+           console.log($$[$0-1]);
+           return $$[$0-1]; 
+        
 break;
-case 3: this.$ = $$[$0]; 
+case 3: this.$ = [$$[$0]]; 
 break;
-case 4: this.$ = ($$[$0-2]).concat($$[$0]); 
+case 4: 
+           this.$ = ($$[$0-2]).concat($$[$0]);
+        
 break;
-case 5: this.$ = [{ns: undefined, event: $$[$0], scope: undefined}]; 
+case 6: this.$ = $$[$0]; 
 break;
-case 6: this.$ = [{ns: undefined, event: $$[$0-2], scope: $$[$0]}]; 
+case 7: this.$ = {events: $$[$0-2], handlers: $$[$0]}; 
 break;
-case 7: this.$ = [{ns: $$[$0-2], event: $$[$0], scope: undefined}]; 
+case 8: this.$ = [$$[$0]]; 
 break;
-case 8: this.$ = [{ns: $$[$0-4], event: $$[$0-2], scope: $$[$0]}]; 
+case 9: this.$ = ($$[$0-2]).concat([$$[$0]]); 
 break;
-case 9: this.$ = [$$[$0]]; 
+case 10: this.$ = {ns: undefined, event: $$[$0], scope: undefined}; 
 break;
-case 10: this.$ = ($$[$0-2]).concat([$$[$0]]); 
+case 11: this.$ = {ns: $$[$0-2], event: $$[$0-1], scope: undefined}; 
 break;
-case 11: this.$ = $$[$0]; 
+case 12: this.$ = {ns: undefined, event: $$[$0-2], scope: $$[$0]}; 
 break;
-case 12: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
+case 13: this.$ = {ns: $$[$0-4], event: $$[$0-2], scope: $$[$0]}; 
 break;
-case 13: this.$ = {ns: undefined, method: $$[$0], scope: undefined}; 
+case 14: this.$ = [$$[$0]]; 
 break;
-case 14: this.$ = {ns: $$[$0-2], method: $$[$0], scope: undefined} 
+case 15: this.$ = ($$[$0-2]).concat([$$[$0]]); 
 break;
-case 15: this.$ = {ns: undefined, method: $$[$0-2], scope: $$[$0]}; 
+case 16: this.$ = $$[$0]; 
 break;
-case 16: this.$ = {ns: $$[$0-4], method: $$[$0-2], scope: $$[$0]}; 
+case 17: this.$ = Array.isArray($$[$0-2]) ? ($$[$0-2]).concat([$$[$0]]) : [$$[$0-2], $$[$0]]; 
 break;
-case 17: this.$ = { name: $$[$0] }; 
+case 18: this.$ = {ns: undefined, method: $$[$0], scope: undefined}; 
 break;
-case 18: this.$ = { name: $$[$0], macro: true} 
+case 19: this.$ = {ns: $$[$0-2], method: $$[$0], scope: undefined}; 
 break;
-case 19: this.$ = { type: "string", value: $$[$0-1] } 
+case 20: this.$ = {ns: undefined, method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 21: this.$ = {ns: $$[$0-4], method: $$[$0-2], scope: $$[$0]}; 
+break;
+case 22: this.$ = { name: $$[$0] }; 
+break;
+case 23: this.$ = { type: "string", value: $$[$0] } 
 break;
 }
 },
-table: [{1:[2,1],3:1,4:2,8:3,10:4,16:[1,5],17:[1,6],18:[1,7]},{1:[3]},{5:[1,8],9:[1,9]},{5:[2,3],9:[2,3]},{5:[2,5],9:[2,5],11:[1,10],12:[1,11]},{5:[2,17],7:[2,17],9:[2,17],11:[2,17],12:[2,17],15:[2,17]},{16:[1,12]},{16:[1,13]},{6:14,10:17,13:15,14:16,16:[1,5],17:[1,6],18:[1,7]},{8:18,10:4,16:[1,5],17:[1,6],18:[1,7]},{10:19,16:[1,5],17:[1,6],18:[1,7]},{10:20,16:[1,5],17:[1,6],18:[1,7]},{5:[2,18],7:[2,18],9:[2,18],11:[2,18],12:[2,18],15:[2,18]},{18:[1,21]},{7:[1,22],9:[1,23]},{7:[2,9],9:[2,9],15:[1,24]},{7:[2,11],9:[2,11],15:[2,11]},{7:[2,13],9:[2,13],11:[1,26],12:[1,25],15:[2,13]},{5:[2,4],9:[2,4]},{5:[2,6],9:[2,6]},{5:[2,7],9:[2,7],11:[1,27]},{5:[2,19],7:[2,19],9:[2,19],11:[2,19],12:[2,19],15:[2,19]},{1:[2,2]},{10:17,13:28,14:16,16:[1,5],17:[1,6],18:[1,7]},{10:17,14:29,16:[1,5],17:[1,6],18:[1,7]},{10:30,16:[1,5],17:[1,6],18:[1,7]},{10:31,16:[1,5],17:[1,6],18:[1,7]},{10:32,16:[1,5],17:[1,6],18:[1,7]},{7:[2,10],9:[2,10],15:[1,24]},{7:[2,12],9:[2,12],15:[2,12]},{7:[2,14],9:[2,14],11:[1,33],15:[2,14]},{7:[2,15],9:[2,15],15:[2,15]},{5:[2,8],9:[2,8]},{10:34,16:[1,5],17:[1,6],18:[1,7]},{7:[2,16],9:[2,16],15:[2,16]}],
-defaultActions: {22:[2,2]},
+table: [{1:[2,1],3:1,4:2,6:3,7:[1,4],8:5,9:6,12:7,14:8,20:[1,9],21:[1,10]},{1:[3]},{5:[1,11],7:[1,12]},{5:[2,3],7:[2,3]},{5:[2,5],7:[2,5]},{5:[2,6],7:[2,6]},{10:[1,13],13:[1,14]},{10:[2,8],13:[2,8]},{10:[2,10],13:[2,10],15:[1,15],16:[1,16]},{5:[2,22],7:[2,22],10:[2,22],13:[2,22],15:[2,22],16:[2,22],19:[2,22]},{5:[2,23],7:[2,23],10:[2,23],13:[2,23],15:[2,23],16:[2,23],19:[2,23]},{1:[2,2]},{6:17,7:[1,4],8:5,9:6,12:7,14:8,20:[1,9],21:[1,10]},{11:18,14:21,17:19,18:20,20:[1,9],21:[1,10]},{12:22,14:8,20:[1,9],21:[1,10]},{14:23,20:[1,9],21:[1,10]},{14:24,20:[1,9],21:[1,10]},{5:[2,4],7:[2,4]},{5:[2,7],7:[2,7],13:[1,25]},{5:[2,14],7:[2,14],13:[2,14],19:[1,26]},{5:[2,16],7:[2,16],13:[2,16],19:[2,16]},{5:[2,18],7:[2,18],13:[2,18],15:[1,27],16:[1,28],19:[2,18]},{10:[2,9],13:[2,9]},{10:[2,11],13:[2,11],16:[1,29]},{10:[2,12],13:[2,12]},{14:21,17:30,18:20,20:[1,9],21:[1,10]},{14:21,18:31,20:[1,9],21:[1,10]},{14:32,20:[1,9],21:[1,10]},{14:33,20:[1,9],21:[1,10]},{14:34,20:[1,9],21:[1,10]},{5:[2,15],7:[2,15],13:[2,15],19:[1,26]},{5:[2,17],7:[2,17],13:[2,17],19:[2,17]},{5:[2,19],7:[2,19],13:[2,19],16:[1,35],19:[2,19]},{5:[2,20],7:[2,20],13:[2,20],19:[2,20]},{10:[2,13],13:[2,13]},{14:36,20:[1,9],21:[1,10]},{5:[2,21],7:[2,21],13:[2,21],19:[2,21]}],
+defaultActions: {11:[2,2]},
 parseError: function parseError(str, hash) {
     throw new Error(str);
 },
@@ -383,30 +392,36 @@ var YYSTATE=YY_START
 switch($avoiding_name_collisions) {
 case 0:/* skip whitespace */
 break;
-case 1:return 16
+case 1:return 21
 break;
-case 2:return 17
+case 2:return 20
 break;
-case 3:return 5
+case 3:return '('
 break;
-case 4:return 11
+case 4:return ')'
 break;
-case 5:return 15
+case 5:return '^'
 break;
-case 6:return 9
+case 6:return 10
 break;
-case 7:return 18
+case 7:return 16
 break;
-case 8:return 12
+case 8:return 19
 break;
-case 9:return 7
+case 9:return 13
 break;
-case 10:return 'INVALID'
+case 10:return 15
+break;
+case 11:return 7
+break;
+case 12:return 5
+break;
+case 13:return 'INVALID'
 break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:")/,/^(?:\/)/,/^(?:$)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:".*")/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\()/,/^(?:\))/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:\/)/,/^(?:;)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;
 function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;

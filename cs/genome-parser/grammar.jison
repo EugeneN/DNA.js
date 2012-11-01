@@ -1,95 +1,106 @@
-
 %lex
 %%
 
 \s+                   /* skip whitespace */
-[A-Za-z0-9_]+\b       return 'IDENTIFIER'
-"("                   return 'OPEN_PAREN'
-")"                   return 'CLOSE_PAREN'
-"^"                   return 'MACRO'
-":"                   return 'BIND'
-"@"                   return 'AT'
-"|"                   return 'COMPOSE'
-","                   return 'ALSO'
-\"                    return 'QUOTE'
-"/"                   return 'NS_SEP'
-
-";"                   return 'EXPR_SEP'
+\".*\"                return 'STRING'
+[A-Za-z0-9_]+\b       return 'WORD'
+"("                   return '('
+")"                   return ')'
+"^"                   return '^'
+":"                   return ':'
+"@"                   return '@'
+"|"                   return '|'
+","                   return ','
+"/"                   return '/'
+";"                   return ';'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
 
 /lex
 
+/* operator associations and precedence */
+%left ',' '|' ';' '/'
+%right ':'
+
 %start program
 
 %%
 
-program
+program 
     :
-    | expression EOF
-        %{ $$ = [{events: $1, handlers: $3}]; %}
-    | program EXPR_SEP expression EOF
-        %{ $$ = ($1).concat($3);
-           console.log($$);
-           return $$; %}
+    | text EOF
+        {{ 
+           console.log($1);
+           return $1; 
+        }}
+    ;
+
+text
+    : expression
+        %{ $$ = [$1]; %}
+    | text ';' expression
+        %{ 
+           $$ = ($1).concat($3);
+        %}
     ;
 
 expression
-    : event_expr BIND handler_expr
+    : ';'
+    | event_binding_def
+        {{ $$ = $1; }}
+    ;
+
+event_binding_def
+    : events ':' handlers
         %{ $$ = {events: $1, handlers: $3}; %}
-    : event_expr BIND handler_expr EXPR_SEP
-        %{ $$ = {events: $1, handlers: $3}; %}
     ;
 
-event_expr
-    : single_event_expr
-        %{ $$ = $1; %}
-    | event_expr ALSO single_event_expr
-        %{ $$ = ($1).concat($3); %}
-    ;
-
-single_event_expr
-    : expr
-        %{ $$ = [{ns: undefined, event: $1, scope: undefined}]; %}
-    | expr AT expr
-        %{ $$ = [{ns: undefined, event: $1, scope: $3}]; %}
-    | expr NS_SEP expr
-        {{ $$ = [{ns: $1, event: $3, scope: undefined}]; }}
-    | expr NS_SEP expr AT expr
-        {{ $$ = [{ns: $1, event: $3, scope: $5}]; }}
-    ;
-
-
-handler_expr
-    : composed_handler_expr
+events
+    : event
         %{ $$ = [$1]; %}
-    | handler_expr ALSO composed_handler_expr
+    | events ',' event
         %{ $$ = ($1).concat([$3]); %}
     ;
 
-composed_handler_expr
-    : method
+event
+    : literal
+        %{ $$ = {ns: undefined, event: $1, scope: undefined}; %}
+    | literal '/' literal
+        %{ $$ = {ns: $1, event: $2, scope: undefined}; %}
+    | literal '@' literal
+        %{ $$ = {ns: undefined, event: $1, scope: $3}; %}
+    | literal '/' literal '@' literal
+        %{ $$ = {ns: $1, event: $3, scope: $5}; %}
+    ;
+
+handlers
+    : handler
+        %{ $$ = [$1]; %}
+    | handlers ',' handler
+        %{ $$ = ($1).concat([$3]); %}
+    ;
+
+handler
+    : single_handler
         {{ $$ = $1; }}
-    | composed_handler_expr COMPOSE method
+    | handler '|' single_handler
         {{ $$ = Array.isArray($1) ? ($1).concat([$3]) : [$1, $3]; }}
     ;
 
-method
-    : expr
+single_handler
+    : literal
         {{ $$ = {ns: undefined, method: $1, scope: undefined}; }}
-    | expr NS_SEP expr
-        {{ $$ = {ns: $1, method: $3, scope: undefined} }}
-    | expr AT expr
+    | literal '/' literal
+        {{ $$ = {ns: $1, method: $3, scope: undefined}; }}
+    | literal '@' literal
         {{ $$ = {ns: undefined, method: $1, scope: $3}; }}
-    | expr NS_SEP expr AT expr
+    | literal '/' literal '@' literal
         {{ $$ = {ns: $1, method: $3, scope: $5}; }}
     ;
 
-expr
-    : IDENTIFIER
+literal
+    : WORD
         {{ $$ = { name: $1 }; }}
-    | MACRO IDENTIFIER
-        {{ $$ = { name: $2, macro: true} }}
-    | QUOTE IDENTIFIER QUOTE
-        {{ $$ = { type: "string", value: $2 } }}
+    | STRING
+        {{ $$ = { type: "string", value: $1 } }}
     ;
