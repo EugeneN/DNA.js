@@ -1,5 +1,5 @@
 (function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, get_cell, get_cell_or_this, get_create_cell, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, find_cell, get_cell, get_create_cell, get_create_cell_by_id, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
   var __slice = Array.prototype.slice;
 
   DEBUG = true;
@@ -97,14 +97,14 @@
     return CELLS[id];
   };
 
-  get_cell_or_this = function(node, scope_id) {
-    var a_node, cell;
-    if (scope_id === THIS) {
-      return get_create_cell(node.id, node);
+  find_cell = function(scope_id, this_cell) {
+    var cell;
+    if ((scope_id === THIS || !scope_id) && this_cell) {
+      return this_cell;
     } else if (cell = get_cell(scope_id)) {
       return cell;
-    } else if (a_node = Y.one("#" + scope_id)) {
-      return get_create_cell(a_node.id, a_node);
+    } else if (cell = get_create_cell_by_id(scope_id)) {
+      return cell;
     } else {
       return null;
     }
@@ -121,19 +121,24 @@
     }
   };
 
+  get_create_cell_by_id = function(id) {
+    var node;
+    if (node = Y.one("#" + id)) {
+      return get_create_cell(id, node);
+    } else {
+      return null;
+    }
+  };
+
   parse_ast_handler_node = function(handler, current_cell) {
-    var cell, method, ns, scope, x;
+    var cell, cell_id, method, ns, scope;
     ns = handler.ns, method = handler.method, scope = handler.scope;
-    cell = (function() {
-      if (!scope || scope.name === THIS) {
-        return current_cell;
-      } else if (x = get_cell(scope.name)) {
-        return x;
-      } else {
-        say("Unknown cell referenced in handler", handler);
-        throw "Unknown cell referenced in handler";
-      }
-    })();
+    cell_id = (scope != null ? scope.name : void 0) || THIS;
+    cell = find_cell(cell_id, current_cell);
+    if (!cell) {
+      say("Unknown cell referenced in handler", handler);
+      throw "Unknown cell referenced in handler";
+    }
     switch (method.type) {
       case 'string':
         return {
@@ -181,33 +186,32 @@
       return save_cell(cell);
     });
     gene_expression_matrices.each(function(node) {
-      var cell, handlers, subscriptions;
+      var cell, dna_sequences;
       cell = get_create_cell(node.id, node);
-      subscriptions = parse_genome(cell.node.getData(DA_SUBSCRIBE));
-      say("Subscriptions for", cell, ":", subscriptions);
-      handlers = subscriptions.handlers.map(function(handlr) {
-        var handler_chain;
-        if (Array.isArray(handlr)) {
-          handler_chain = handlr.map(function(x) {
-            return (parse_ast_handler_node(x, cell)).impl;
-          });
+      dna_sequences = parse_genome(cell.node.getData(DA_SUBSCRIBE));
+      say("DNA AST for", cell, ":", dna_sequences);
+      return dna_sequences.map(function(dna_seq) {
+        var handlers;
+        handlers = dna_seq.handlers.map(function(handlr) {
+          var ast_parser, handler_chain, handlers_ast_list;
+          handlers_ast_list = Array.isArray(handlr) ? handlr : [handlr];
+          ast_parser = function(h) {
+            var m;
+            m = parse_ast_handler_node(h, cell);
+            return m.impl;
+          };
+          handler_chain = handlers_ast_list.map(ast_parser);
           return _.compose.apply(_, handler_chain.reverse());
-        } else {
-          return parse_ast_handler_node(handlr, cell);
-        }
-      });
-      return subscriptions.events.map(function(_arg) {
-        var event, ns, scope;
-        ns = _arg.ns, event = _arg.event, scope = _arg.scope;
-        return handlers.map(function(handlr) {
-          var event_scope_cell, h;
-          event_scope_cell = get_cell_or_this(cell, scope.name);
-          if (scope) {
+        });
+        return dna_seq.events.map(function(_arg) {
+          var event, ns, scope;
+          ns = _arg.ns, event = _arg.event, scope = _arg.scope;
+          return handlers.map(function(handlr) {
+            var event_scope_cell, h;
+            event_scope_cell = find_cell((scope != null ? scope.name : void 0) || THIS, cell);
             h = dispatch_handler(ns != null ? ns.name : void 0, event.name, event_scope_cell);
             return h.impl(handlr);
-          } else {
-            return event_scope_cell.node.on(event.name, handlr);
-          }
+          });
         });
       });
     });

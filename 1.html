@@ -2,6 +2,10 @@
   <head>
     <style type="text/css">
       .cell {
+        /* just a marker/selector */
+      }
+
+      .green {
         width: 150px;
         height: 150px;
         background-color: lightgreen;
@@ -11,9 +15,18 @@
         overflow: auto;
 
       }
+
+      .blue {
+        display: inline-block;
+        padding: 4px;
+        background-color: lightblue;
+        border: 1px solid blue;
+      }
+
       span {
         display: block;
       }
+
       .yui3-calendar {
         position: absolute;
       }
@@ -27,7 +40,7 @@
 
   <body class="yui3-skin-sam">
     <div class="some-outer-structure">
-      <div class="cell"
+      <div class="cell green"
            id="cell1"
            data-extend-with="IDraggable IPositionReporter IMovable">
 
@@ -45,7 +58,7 @@
         <button id="btn1" data-no-subscribe='click@this : "Hello_from_cell1" | appendContent@cell2'>Say hello to cell2</button>
       </div>
 
-      <div class="cell"
+      <div class="cell green"
            id="cell2"
            data-subscribe='click@btn1 : "Btn1_clicked" | appendContent@this'
            data-extend-with="IDraggable IPositionReporter IMovable">
@@ -62,24 +75,25 @@
         <button data-subscribe='click@this : "Hello_world" | say'>Say hello</button>
         <button data-subscribe='click@this : "Hello_from_cell2" | appendContent@cell1'>Say hello to cell1</button>
 
-        <button data-subscribe='click@this : "5" | moveLeft@cell1'>&larr;</button>
+        <button id="zzzzzzzz" data-subscribe='click@this : "5" | moveLeft@cell1'>&larr;</button>
         <button data-subscribe='click@this : "5" | moveUp@cell1'>&uarr;</button>
         <button data-subscribe='click@this : "5" | moveDown@cell1'>&darr;</button>
         <button data-subscribe='click@this : "5" | moveRight@cell1'>&rarr;</button>
 
       </div>
 
-      <div style="display: inline-block;">
+      <div class="cell blue"
+           data-extend-with=" IDraggable">
         <input type="text"
              id="datef"
              placeholder="Select a date"
-             data-extend-with="ICalendar"
-             data-subscribe='
-              click@this : "aaa"|toggle
-
-              '
-             data-popup-el=""
              />
+        <button data-extend-with="ICalendar"
+                id="cal-button"
+                data-subscribe=' click : toggle
+                               ; onSelectionChange : setValue@datef, hide
+                               '
+          >Cal</button>
       </div>
     </div>
 

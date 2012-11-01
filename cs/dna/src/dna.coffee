@@ -66,16 +66,15 @@ save_cell = (cell) -> CELLS[cell.id] = cell
 
 get_cell = (id) -> CELLS[id]
 
-get_cell_or_this = (node, scope_id) ->
-    if scope_id is THIS
-        get_create_cell node.id, node
+find_cell = (scope_id, this_cell) ->
+    if (scope_id is THIS or not scope_id) and this_cell
+        this_cell
     else if cell = get_cell scope_id
         cell
-    else if a_node = Y.one "##{scope_id}"
-        get_create_cell a_node.id, a_node
+    else if cell = get_create_cell_by_id scope_id
+        cell
     else
         null
-
 
 get_create_cell = (id, node) ->
     if cell = get_cell id
@@ -85,15 +84,19 @@ get_create_cell = (id, node) ->
         save_cell cell
         cell
 
+get_create_cell_by_id = (id) ->
+    if node = Y.one "##{id}"
+        get_create_cell id, node
+    else
+        null
 
 parse_ast_handler_node = (handler, current_cell) ->
     {ns, method, scope} = handler
 
-    cell = if not scope or scope.name is THIS
-        current_cell
-    else if x = get_cell scope.name
-        x
-    else
+    cell_id = scope?.name or THIS
+    cell = find_cell cell_id, current_cell
+
+    unless cell
         say "Unknown cell referenced in handler", handler
         throw "Unknown cell referenced in handler"
 
@@ -126,29 +129,28 @@ ep = (Y) ->
     gene_expression_matrices.each (node) ->
         cell = get_create_cell node.id, node
 
-        subscriptions = parse_genome (cell.node.getData DA_SUBSCRIBE)
-        say "Subscriptions for", cell, ":", subscriptions
+        dna_sequences = parse_genome (cell.node.getData DA_SUBSCRIBE)
+        say "DNA AST for", cell, ":", dna_sequences
 
-        handlers = subscriptions.handlers.map (handlr) ->
-            if Array.isArray handlr
-                handler_chain = handlr.map (x) -> (parse_ast_handler_node x, cell).impl
+        dna_sequences.map (dna_seq) ->
+            handlers = dna_seq.handlers.map (handlr) ->
+                handlers_ast_list = if Array.isArray handlr then handlr else [handlr]
+                ast_parser = (h) ->
+                    m = parse_ast_handler_node h, cell
+                    m.impl
+
+                handler_chain = handlers_ast_list.map ast_parser
+
+                # XXX underscore's compose composes in reverse order for some reason
                 _.compose(handler_chain.reverse()...)
-            else
-                parse_ast_handler_node handlr, cell
 
-        subscriptions.events.map ({ns, event, scope}) ->
-            handlers.map (handlr) ->
-                # delegate this later
-                event_scope_cell = get_cell_or_this cell, scope.name
+            dna_seq.events.map ({ns, event, scope}) ->
+                handlers.map (handlr) ->
+                    # TBD delegate this later
+                    event_scope_cell = find_cell (scope?.name or THIS), cell
 
-                if scope
                     h = dispatch_handler ns?.name, event.name, event_scope_cell
                     h.impl handlr
-                else
-                    # make this use protocols too
-                    event_scope_cell.node.on event.name, handlr
-
-
 
     say "Cells synthesis completed in #{new Date - START}ms."
 

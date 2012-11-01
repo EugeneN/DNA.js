@@ -52,21 +52,21 @@
 var parser = (function(){
 var parser = {trace: function trace() { },
 yy: {},
-symbols_: {"error":2,"program":3,"text":4,"EOF":5,"expression":6,";":7,"event_binding_def":8,"events":9,":":10,"handlers":11,"event":12,",":13,"literal":14,"/":15,"@":16,"handler":17,"single_handler":18,"|":19,"WORD":20,"STRING":21,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",7:";",10:":",13:",",15:"/",16:"@",19:"|",20:"WORD",21:"STRING"},
+symbols_: {"error":2,"program":3,"text":4,"EOF":5,"expression":6,";":7,"event_binding_def":8,"events":9,":":10,"handlers":11,"event":12,",":13,"literal":14,"/":15,"@":16,"handler":17,"single_handler":18,"|":19,"IDENTIFIER":20,"STRING":21,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",7:";",10:":",13:",",15:"/",16:"@",19:"|",20:"IDENTIFIER",21:"STRING"},
 productions_: [0,[3,0],[3,2],[4,1],[4,3],[6,1],[6,1],[8,3],[9,1],[9,3],[12,1],[12,3],[12,3],[12,5],[11,1],[11,3],[17,1],[17,3],[18,1],[18,3],[18,3],[18,5],[14,1],[14,1]],
 performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
 
 var $0 = $$.length - 1;
 switch (yystate) {
-case 2: 
-           console.log($$[$0-1]);
-           return $$[$0-1]; 
+case 2:
+           /* console.log($$[$0-1]); */
+           return $$[$0-1];
         
 break;
 case 3: this.$ = [$$[$0]]; 
 break;
-case 4: 
+case 4:
            this.$ = ($$[$0-2]).concat($$[$0]);
         
 break;
@@ -104,7 +104,7 @@ case 21: this.$ = {ns: $$[$0-4], method: $$[$0-2], scope: $$[$0]};
 break;
 case 22: this.$ = { name: $$[$0] }; 
 break;
-case 23: this.$ = { type: "string", value: $$[$0] } 
+case 23: this.$ = { type: "string", value: ($$[$0]).match('\"(\\.|[^\\"]*?)\"')[1] }; 
 break;
 }
 },
@@ -396,32 +396,36 @@ case 1:return 21
 break;
 case 2:return 20
 break;
-case 3:return '('
+case 3:return 'NUMBER'
 break;
-case 4:return ')'
+case 4:return 'DBLQUOTE'
 break;
-case 5:return '^'
+case 5:return '('
 break;
-case 6:return 10
+case 6:return ')'
 break;
-case 7:return 16
+case 7:return '^'
 break;
-case 8:return 19
+case 8:return 10
 break;
-case 9:return 13
+case 9:return 16
 break;
-case 10:return 15
+case 10:return 19
 break;
-case 11:return 7
+case 11:return 13
 break;
-case 12:return 5
+case 12:return 15
 break;
-case 13:return 'INVALID'
+case 13:return 7
+break;
+case 14:return 5
+break;
+case 15:return 'INVALID'
 break;
 }
 };
-lexer.rules = [/^(?:\s+)/,/^(?:".*")/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:\()/,/^(?:\))/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:\/)/,/^(?:;)/,/^(?:$)/,/^(?:.)/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
+lexer.rules = [/^(?:\s+)/,/^(?:"(\\.|[^\\"]*?)")/,/^(?:[A-Za-z0-9_]+\b)/,/^(?:[0-9]+)/,/^(?:")/,/^(?:\()/,/^(?:\))/,/^(?:\^)/,/^(?::)/,/^(?:@)/,/^(?:\|)/,/^(?:,)/,/^(?:\/)/,/^(?:;)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"inclusive":true}};
 return lexer;})()
 parser.lexer = lexer;
 function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;

@@ -35,8 +35,8 @@ register_protocol_impl 'ICalendar', (node) ->
 
             onSelectionChange: (f) ->
                 cal.on 'selectionChange', (ev) ->
-                    say 'selectionChange'
-                    f.impl ev.newSelection[0]
+                    # ev.newSelection[0] is YUI Calendar specific
+                    f ev.newSelection[0]
 
             getContainer: ->
                 cont

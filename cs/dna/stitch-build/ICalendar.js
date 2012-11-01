@@ -45,8 +45,7 @@
         },
         onSelectionChange: function(f) {
           return cal.on('selectionChange', function(ev) {
-            say('selectionChange');
-            return f.impl(ev.newSelection[0]);
+            return f(ev.newSelection[0]);
           });
         },
         getContainer: function() {

@@ -2,8 +2,10 @@
 %%
 
 \s+                   /* skip whitespace */
-\".*\"                return 'STRING'
-[A-Za-z0-9_]+\b       return 'WORD'
+\"(\\.|[^\\"]*?)\"    return 'STRING'
+[A-Za-z0-9_]+\b       return 'IDENTIFIER'
+[0-9]+                return 'NUMBER'
+\"                    return 'DBLQUOTE'
 "("                   return '('
 ")"                   return ')'
 "^"                   return '^'
@@ -26,12 +28,12 @@
 
 %%
 
-program 
+program
     :
     | text EOF
-        {{ 
-           console.log($1);
-           return $1; 
+        {{
+           /* console.log($1); */
+           return $1;
         }}
     ;
 
@@ -39,7 +41,7 @@ text
     : expression
         %{ $$ = [$1]; %}
     | text ';' expression
-        %{ 
+        %{
            $$ = ($1).concat($3);
         %}
     ;
@@ -99,8 +101,8 @@ single_handler
     ;
 
 literal
-    : WORD
+    : IDENTIFIER
         {{ $$ = { name: $1 }; }}
     | STRING
-        {{ $$ = { type: "string", value: $1 } }}
+        {{ $$ = { type: "string", value: ($1).match('\"(\\.|[^\\"]*?)\"')[1] }; }}
     ;
