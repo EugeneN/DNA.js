@@ -38,6 +38,7 @@ Protocols =
         ['toggle', []]
         ['setDate', ['date']]
         ['onSelectionChange', ['f']]
+        ['add', ['interval', 'date']]
     ]
 
 DEFAULT_PROTOCOLS = ['IDom']

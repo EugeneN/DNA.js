@@ -6,7 +6,7 @@
     IMovable: [['moveUp', ['x']], ['moveDown', ['x']], ['moveLeft', ['x']], ['moveRight', ['x']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
     IDom: [['setContent', ['new_content']], ['setValue', ['new_value']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']], ['appendContent', ['content']], ['kill', []], ['setAttr', ['attr']]],
-    ICalendar: [['show', []], ['hide', []], ['toggle', []], ['setDate', ['date']], ['onSelectionChange', ['f']]]
+    ICalendar: [['show', []], ['hide', []], ['toggle', []], ['setDate', ['date']], ['onSelectionChange', ['f']], ['add', ['interval', 'date']]]
   };
 
   DEFAULT_PROTOCOLS = ['IDom'];

@@ -41,6 +41,13 @@ register_protocol_impl 'ICalendar', (node) ->
             getContainer: ->
                 cont
 
+            add: (interval, date) ->
+                ''' Very naive! '''
+                say 'ICalendar/add args', arguments
+
+                days_to_add = parseInt interval, 10
+                new Date(date.getFullYear(), date.getMonth(), date.getDate() + days_to_add)
+
 
         }
 

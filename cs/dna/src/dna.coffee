@@ -91,22 +91,25 @@ get_create_cell_by_id = (id) ->
         null
 
 parse_ast_handler_node = (handler, current_cell) ->
-    {ns, method, scope} = handler
+    if Array.isArray handler
+        {ns, method, scope} = handler[0]
+    else
+        {ns, method, scope} = handler
 
     cell_id = scope?.name or THIS
     cell = find_cell cell_id, current_cell
 
     unless cell
-        say "Unknown cell referenced in handler", handler
+        say "Unknown cell referenced in handler", cell_id, handler
         throw "Unknown cell referenced in handler"
 
-    switch method.type
+    handler_fn = switch method.type
         when 'string'
             impl: -> method.value
         when 'number'
             impl: -> method.value
-        when 'vector'      
-            impl: (idx, lastidx) -> 
+        when 'vector'
+            impl: (idx, lastidx) ->
                 if idx and not isNaN idx
                     method.value[idx].value
                 else if idx and lastidx and not (isNaN idx) and not (isNaN lastidx)
@@ -114,13 +117,27 @@ parse_ast_handler_node = (handler, current_cell) ->
                 else
                     (i.value for i in method.value)
         when 'hashmap'
-            impl: (key) -> 
+            impl: (key) ->
                 if key
                     method.value[key]
                 else
                     method.value
 
         else dispatch_handler ns?.name, method.name, cell
+
+    if Array.isArray handler
+        partial_args = handler[1...].map (i) -> i.value
+        #partially_applied_handler = _.bind handler_fn.impl, null, partial_args
+        partially_applied_handler = (args...) ->
+            say 'going to partially apply ', partial_args, args, handler_fn
+            do handler_fn.impl.apply null, (partial_args.concat args)
+
+        say '>>>>>', partially_applied_handler, partial_args
+
+        {impl: partially_applied_handler}
+
+    else
+        handler_fn
 
 
 # Entry point

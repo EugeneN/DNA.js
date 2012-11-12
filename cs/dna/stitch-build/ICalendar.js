@@ -1,6 +1,6 @@
 (function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -50,6 +50,13 @@
         },
         getContainer: function() {
           return cont;
+        },
+        add: function(interval, date) {
+          ' Very naive! ';
+          var days_to_add;
+          say('ICalendar/add args', arguments);
+          days_to_add = parseInt(interval, 10);
+          return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days_to_add);
         }
       };
     })(node);

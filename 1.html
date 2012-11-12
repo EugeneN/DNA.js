@@ -42,7 +42,7 @@
     <div class="some-outer-structure">
       <div class="cell green"
            id="cell1"
-           data-extend-with="IDraggable IPositionReporter IMovable">
+           data-extend-with="IDraggable IPositionReporter IMovable ">
 
         <b>Cell 1</b>
 
@@ -55,7 +55,10 @@
 
         <button data-subscribe='click : "Hello_world" | say'>Say hello</button>
 
-        <button id="btn1" data-no-subscribe='click : "Hello_from_cell1" | appendContent@cell2'>Say hello to cell2</button>
+        <button id="btn1"
+                data-no-subscribe='
+                  click : "Hello_from_cell1" | appendContent@cell2
+                '>Say hello to cell2</button>
       </div>
 
       <div class="cell green"
@@ -79,7 +82,7 @@
         <button data-subscribe='click : 5 | moveUp@cell1'>&uarr;</button>
         <button data-subscribe='click : 5 | moveDown@cell1'>&darr;</button>
         <button data-subscribe='click : 5 | moveRight@cell1'>&rarr;</button>
-        
+
 
       </div>
 
@@ -90,10 +93,27 @@
              placeholder="Select a date"
              />
         <button data-extend-with="ICalendar"
-                id="cal-button"
                 data-subscribe=' click : toggle
-                               ; onSelectionChange : setValue@datef, hide
+                               ; onSelectionChange : setValue@datef
+                                                     , ICalendar/add "3days" | setValue@datef2
+                                                     , hide
                                '
+                id="cal-button"
+          >Cal</button>
+      </div>
+
+      <div class="cell blue"
+           data-extend-with=" IDraggable">
+
+        <input type="text"
+             id="datef2"
+             placeholder="Select a date"
+             />
+        <button data-extend-with="ICalendar"
+                data-subscribe=' click : toggle
+                               ; onSelectionChange : setValue@datef2, hide
+                               '
+                id="cal-button2"
           >Cal</button>
       </div>
     </div>
@@ -110,15 +130,38 @@
     <button data-subscribe='click : [1 2 3 4 5 6] | say'>Say [1 2 3 4 5 6]</button>
 
 
-    <span data-subscribe='click : kill'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell1 x: <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell1 y: <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent"></b></span>
+    <span data-subscribe='click : kill'>
+      here be cell1 x:
+      <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent"></b></span>
 
-    <span data-subscribe='click : kill'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell2 x: <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent"></b></span>
-    <span data-subscribe='click : kill'>here be cell2 y: <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent"></b></span>
+    <span data-subscribe='click : kill'>
+      here be cell1 x:
+      <b data-subscribe="onDragStop@cell1 : getX@cell1 | setContent"></b></span>
+
+    <span data-subscribe='click : kill'>
+      here be cell1 y:
+      <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent"></b></span>
+
+    <span data-subscribe='click : kill'>
+      here be cell1 y:
+      <b data-subscribe="onDragStop@cell1 : getY@cell1 | setContent"></b></span>
+
+
+    <span data-subscribe='click : kill'>
+      here be cell2 x:
+      <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent"></b></span>
+
+    <span data-subscribe='click : kill'>
+      here be cell2 x:
+      <b data-subscribe="onDragStop@cell2 : getX@cell2 | setContent"></b></span>
+
+    <span data-subscribe='click : kill'>
+      here be cell2 y:
+      <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent"></b></span>
+
+    <span data-subscribe='click : kill'>
+      here be cell2 y:
+      <b data-subscribe="onDragStop@cell2 : getY@cell2 | setContent"></b></span>
 
 
     <div class="yui3-g">

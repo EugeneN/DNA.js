@@ -49,8 +49,8 @@
   }
   return this.require.define;
 }).call(this)({"ICalendar": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -100,6 +100,13 @@
         },
         getContainer: function() {
           return cont;
+        },
+        add: function(interval, date) {
+          ' Very naive! ';
+          var days_to_add;
+          say('ICalendar/add args', arguments);
+          days_to_add = parseInt(interval, 10);
+          return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days_to_add);
         }
       };
     })(node);
@@ -107,8 +114,8 @@
 
 }).call(this);
 }, "IDom": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -165,8 +172,8 @@
 
 }).call(this);
 }, "IDraggable": function(exports, require, module) {(function() {
-  var register_protocol_impl, say,
-    __slice = [].slice;
+  var register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   register_protocol_impl = require('libprotocol').register_protocol_impl;
 
@@ -247,9 +254,50 @@
   });
 
 }).call(this);
+}, "IRenderer": function(exports, require, module) {(function() {
+  var DEFAULT_FORMAT, DISPATCH_ATTR, FORMAT_ATTR, TYPE, register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
+
+  register_protocol_impl = require('libprotocol').register_protocol_impl;
+
+  say = function() {
+    var a;
+    a = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return console.log.apply(console, a);
+  };
+
+  DISPATCH_ATTR = 'renderer-type';
+
+  FORMAT_ATTR = 'render-date-format';
+
+  DEFAULT_FORMAT = '%x %c';
+
+  TYPE = 'date';
+
+  register_protocol_impl('IRenderer', function(node) {
+    return (function(node) {
+      return {
+        render: function(value) {
+          var date, format;
+          format = (node.getData(FORMAT_ATTR)) || DEFAULT_FORMAT;
+          date = new Date(value);
+          return Y.Date.format(date, {
+            format: format
+          });
+        },
+        _dispatch: function() {
+          var args;
+          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+          return (node.getData(DISPATCH_ATTR)) === TYPE;
+        }
+      };
+    })(node);
+  });
+
+}).call(this);
 }, "dna": function(exports, require, module) {(function() {
-  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, find_cell, get_cell, get_create_cell, get_create_cell_by_id, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref1,
-    __slice = [].slice;
+  var CELLS, DA_EXTEND, DA_SUBSCRIBE, DEBUG, DEFAULT_PROTOCOLS, THIS, dispatch_handler, dispatch_impl, ep, find_cell, get_cell, get_create_cell, get_create_cell_by_id, get_protocol, parse_ast_handler_node, parse_genome, register_protocol_impl, save_cell, say, synthesize_cell, _ref, _ref2;
+  var __slice = Array.prototype.slice;
 
   DEBUG = true;
 
@@ -269,7 +317,7 @@
 
   _ref = require('libprotocol'), register_protocol_impl = _ref.register_protocol_impl, dispatch_impl = _ref.dispatch_impl;
 
-  _ref1 = require('protocols'), DEFAULT_PROTOCOLS = _ref1.DEFAULT_PROTOCOLS, get_protocol = _ref1.get_protocol;
+  _ref2 = require('protocols'), DEFAULT_PROTOCOLS = _ref2.DEFAULT_PROTOCOLS, get_protocol = _ref2.get_protocol;
 
   CELLS = {};
 
@@ -380,64 +428,87 @@
   };
 
   parse_ast_handler_node = function(handler, current_cell) {
-    var cell, cell_id, method, ns, scope;
-    ns = handler.ns, method = handler.method, scope = handler.scope;
+    var cell, cell_id, handler_fn, method, ns, partial_args, partially_applied_handler, scope, _ref3;
+    if (Array.isArray(handler)) {
+      _ref3 = handler[0], ns = _ref3.ns, method = _ref3.method, scope = _ref3.scope;
+    } else {
+      ns = handler.ns, method = handler.method, scope = handler.scope;
+    }
     cell_id = (scope != null ? scope.name : void 0) || THIS;
     cell = find_cell(cell_id, current_cell);
     if (!cell) {
-      say("Unknown cell referenced in handler", handler);
+      say("Unknown cell referenced in handler", cell_id, handler);
       throw "Unknown cell referenced in handler";
     }
-    switch (method.type) {
-      case 'string':
-        return {
-          impl: function() {
-            return method.value;
-          }
-        };
-      case 'number':
-        return {
-          impl: function() {
-            return method.value;
-          }
-        };
-      case 'vector':
-        return {
-          impl: function(idx, lastidx) {
-            var i, _i, _j, _len, _len1, _ref2, _ref3, _results, _results1;
-            if (idx && !isNaN(idx)) {
-              return method.value[idx].value;
-            } else if (idx && lastidx && !(isNaN(idx)) && !(isNaN(lastidx))) {
-              _ref2 = method.value.slice(idx, lastidx);
-              _results = [];
-              for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-                i = _ref2[_i];
-                _results.push(i.value);
-              }
-              return _results;
-            } else {
-              _ref3 = method.value;
-              _results1 = [];
-              for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-                i = _ref3[_j];
-                _results1.push(i.value);
-              }
-              return _results1;
-            }
-          }
-        };
-      case 'hashmap':
-        return {
-          impl: function(key) {
-            if (key) {
-              return method.value[key];
-            } else {
+    handler_fn = (function() {
+      switch (method.type) {
+        case 'string':
+          return {
+            impl: function() {
               return method.value;
             }
-          }
-        };
-      default:
-        return dispatch_handler(ns != null ? ns.name : void 0, method.name, cell);
+          };
+        case 'number':
+          return {
+            impl: function() {
+              return method.value;
+            }
+          };
+        case 'vector':
+          return {
+            impl: function(idx, lastidx) {
+              var i, _i, _j, _len, _len2, _ref4, _ref5, _results, _results2;
+              if (idx && !isNaN(idx)) {
+                return method.value[idx].value;
+              } else if (idx && lastidx && !(isNaN(idx)) && !(isNaN(lastidx))) {
+                _ref4 = method.value.slice(idx, lastidx);
+                _results = [];
+                for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+                  i = _ref4[_i];
+                  _results.push(i.value);
+                }
+                return _results;
+              } else {
+                _ref5 = method.value;
+                _results2 = [];
+                for (_j = 0, _len2 = _ref5.length; _j < _len2; _j++) {
+                  i = _ref5[_j];
+                  _results2.push(i.value);
+                }
+                return _results2;
+              }
+            }
+          };
+        case 'hashmap':
+          return {
+            impl: function(key) {
+              if (key) {
+                return method.value[key];
+              } else {
+                return method.value;
+              }
+            }
+          };
+        default:
+          return dispatch_handler(ns != null ? ns.name : void 0, method.name, cell);
+      }
+    })();
+    if (Array.isArray(handler)) {
+      partial_args = handler.slice(1).map(function(i) {
+        return i.value;
+      });
+      partially_applied_handler = function() {
+        var args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        say('going to partially apply ', partial_args, args, handler_fn);
+        return handler_fn.impl.apply(null, partial_args.concat(args))();
+      };
+      say('>>>>>', partially_applied_handler, partial_args);
+      return {
+        impl: partially_applied_handler
+      };
+    } else {
+      return handler_fn;
     }
   };
 
@@ -445,9 +516,7 @@
     var START, cell_matrices, gene_expression_matrices;
     say('Cells synthesis started');
     START = new Date;
-    if (DEBUG) {
-      window.Y = Y;
-    }
+    if (DEBUG) window.Y = Y;
     cell_matrices = Y.all("[data-" + DA_EXTEND + "]");
     gene_expression_matrices = Y.all("[data-" + DA_SUBSCRIBE + "]");
     cell_matrices.each(function(node) {
@@ -503,8 +572,8 @@
 
 }).call(this);
 }, "libprotocol": function(exports, require, module) {(function() {
-  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say,
-    __slice = [].slice;
+  var Implementations, THIS, dispatch_impl, dump_impls, register_protocol_impl, say;
+  var __slice = Array.prototype.slice;
 
   say = function() {
     var a;
@@ -555,7 +624,7 @@
     IMovable: [['moveUp', ['x']], ['moveDown', ['x']], ['moveLeft', ['x']], ['moveRight', ['x']]],
     IPositionReporter: [['getX', []], ['getY', []], ['getXY', []]],
     IDom: [['setContent', ['new_content']], ['setValue', ['new_value']], ['alert', ['msg']], ['click', ['handler']], ['say', ['msgs']], ['appendContent', ['content']], ['kill', []], ['setAttr', ['attr']]],
-    ICalendar: [['show', []], ['hide', []], ['toggle', []], ['setDate', ['date']], ['onSelectionChange', ['f']]]
+    ICalendar: [['show', []], ['hide', []], ['toggle', []], ['setDate', ['date']], ['onSelectionChange', ['f']], ['add', ['interval', 'date']]]
   };
 
   DEFAULT_PROTOCOLS = ['IDom'];

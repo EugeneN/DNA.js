@@ -34,21 +34,21 @@ program
     :
     | text EOF
         {{
-           /* console.log($1); */
+           console.log($1);
            return $1;
         }}
     ;
 
 text
-    : expression
+    : statement
         %{ $$ = [$1]; %}
-    | text ';' expression
+    | text ';' statement
         %{
            $$ = ($1).concat($3);
         %}
     ;
 
-expression
+statement
     : ';'
     | event_binding_def
         {{ $$ = $1; }}
@@ -67,13 +67,13 @@ events
     ;
 
 event
-    : literal
+    : symbol
         %{ $$ = {ns: undefined, event: $1, scope: undefined}; %}
-    | literal '/' literal
+    | symbol '/' symbol
         %{ $$ = {ns: $1, event: $2, scope: undefined}; %}
-    | literal '@' literal
+    | symbol '@' symbol
         %{ $$ = {ns: undefined, event: $1, scope: $3}; %}
-    | literal '/' literal '@' literal
+    | symbol '/' symbol '@' symbol
         %{ $$ = {ns: $1, event: $3, scope: $5}; %}
     ;
 
@@ -85,26 +85,33 @@ handlers
     ;
 
 handler
-    : single_handler
+    : handler_expression
         {{ $$ = $1; }}
-    | handler '|' single_handler
+    | handler '|' handler_expression
         {{ $$ = Array.isArray($1) ? ($1).concat([$3]) : [$1, $3]; }}
     ;
 
-single_handler
-    : literal
+handler_expression
+    : partially_applied_handler
+        {{ $$ = [$1]; }}
+    | handler_expression partially_applied_handler
+        {{ $$ = Array.isArray($1) ? ($1).concat([$2]) : [$1, $2]; }}
+    ;
+
+partially_applied_handler
+    : symbol
         {{ $$ = {ns: undefined, method: $1, scope: undefined}; }}
-    | literal '/' literal
+    | symbol '/' symbol
         {{ $$ = {ns: $1, method: $3, scope: undefined}; }}
-    | literal '@' literal
+    | symbol '@' symbol
         {{ $$ = {ns: undefined, method: $1, scope: $3}; }}
-    | literal '/' literal '@' literal
+    | symbol '/' symbol '@' symbol
         {{ $$ = {ns: $1, method: $3, scope: $5}; }}
     ;
 
-literal
+symbol
     : IDENTIFIER
-        {{ $$ = { name: $1 }; }}
+        {{ $$ = { type: "symbol", name: $1 }; }}
     | NUMBER
         {{ $$ = { type: "number", value: parseInt($1, 10)}; }}
     | STRING
@@ -114,10 +121,10 @@ literal
     ;
 
 item_list
-    : 
-        {{ $$ = []; }}    
-    | literal
+    :
+        {{ $$ = []; }}
+    | symbol
         {{ $$ = [$1]; }}
-    | item_list literal
+    | item_list symbol
         {{ $$ = $1.concat($2); }}
     ;
