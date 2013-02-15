@@ -1,0 +1,17 @@
+{
+  "name": "dna",
+  "author": "Eugene Naumenko",
+  "main": "out/dna.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EugeneN/DNA.js"
+  },
+  "version": "0.0.5",
+  
+  "dependencies": {
+    "libprotocol": "*",
+    "libmonad": "*",
+    "libprotein": "*",
+    "genome-parser": "*"
+  }
+}
