@@ -1,5 +1,3 @@
-DEBUG = true
-
 DNA_EXTEND = 'extend'
 DNA_SUBSCRIBE = 'subscribe'
 DNA_ID_PREFIX = 'Z'
@@ -34,6 +32,7 @@ parse_genome = (require 'genome-parser').parse
 } = require 'libmonad'
 
 {info, warn, error, debug} = dispatch_impl 'ILogger'
+devnull = ->
 
 CELLS = {}
 
@@ -60,7 +59,8 @@ process_vector = (vector, cell, dom_parser, cont) =>
             else
                 ((local_cont idx) h())
 
-default_handlers_cont = (args...) -> info "DNA monadic sequence finished with results:", args
+default_handlers_cont = (args...) ->
+    #debug "DNA monadic sequence finished with results:", args
 
 is_data = (method) -> method.type in DNA_DATATYPES
 
@@ -161,6 +161,7 @@ get_create_cell_by_id = (id, dom_parser) ->
         null
 
 dispatch_handler_fn = (ns, method, cell, dom_parser) ->
+    # FIXME
     switch method.type
         when STRING
             {impl: -> method.value}
@@ -243,7 +244,7 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
 
 make_extended_node = (dom_parser, node) ->
     protocols = ((dom_parser.getData DNA_EXTEND, node).split " ").filter (i) -> !!i
-    info "Protocols found for", node, ":", protocols
+    #debug "Protocols found for", node, ":", protocols
 
     save_cell (synthesize_cell node, protocols, dom_parser)
 
@@ -251,10 +252,10 @@ make_monadized_handler = (dom_parser, cell, handlr) ->
     handlers_ast_list = if is_array handlr then handlr else [handlr]
     ast_parser = (h) -> (parse_ast_handler_node h, cell, dom_parser).impl
     lifted_handlers_chain = handlers_ast_list.map (compose2 lift, ast_parser)
-    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), debug)
+    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), devnull)
 
     (init_val) ->
-        info "Starting DNA monadic sequence with arguments:", init_val
+        #debug "Starting DNA monadic sequence with arguments:", init_val
         (domonad wrapper_monad, lifted_handlers_chain, init_val) default_handlers_cont
 
 interpose_handlers_with_events = (dom_parser, cell, handlers, evs_args) ->
@@ -273,7 +274,7 @@ make_subscribed_node = (dom_parser, node) ->
     cell = get_create_cell node.id, node, dom_parser
 
     dna_sequences = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
-    info "DNA AST for", cell, ":", dna_sequences
+    #debug "DNA AST for", cell, ":", dna_sequences
 
     dna_sequences.map (dna_seq) ->
         dna_seq.events.map (partial interpose_handlers_with_events,
@@ -287,7 +288,7 @@ synthesize_node = (dom_parser) ->
     START_TIME = new Date
 
     root_node = dom_parser.get_root_node()
-    info 'Cells synthesis started for node', root_node
+    #debug 'Cells synthesis started for node', root_node
 
     extended_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}]"
     subscribed_nodes = dom_parser.get_by_attr "[data-#{DNA_SUBSCRIBE}]"
@@ -295,7 +296,7 @@ synthesize_node = (dom_parser) ->
     extended_nodes.map (partial make_extended_node, dom_parser)
     subscribed_nodes.map (partial make_subscribed_node, dom_parser)
 
-    info "Cells synthesis completed in #{new Date - START_TIME}ms."
+    #debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 module.exports =
 # Entry point
