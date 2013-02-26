@@ -28,7 +28,7 @@ task 'cafebuild', 'build with cafe', ->
     process.send JSON.stringify build()
 
 task 'build', 'simple build', ->
-    fs.writeFileSync "out/dna.js", build()
+    build()
 
 task 'show_build', 'show build output', ->
     console.log JSON.stringify build()

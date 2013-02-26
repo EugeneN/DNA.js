@@ -10,7 +10,7 @@ NULL = 'null'
 DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
 
-{partial, is_array, is_object, bool, complement, compose2} = require 'libprotein'
+{uniq, partial, is_array, is_object, bool, complement, compose2} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
 
@@ -18,7 +18,6 @@ parse_genome = (require 'genome-parser').parse
     register_protocol_impl
     dispatch_impl
     get_protocol
-    get_default_protocols
     is_async
     get_arity
 } = require 'libprotocol'
@@ -35,6 +34,9 @@ parse_genome = (require 'genome-parser').parse
 devnull = ->
 
 CELLS = {}
+
+get_default_protocols = ->
+    (require 'bootstrapper')?.ENV?.DEFAULT_PROTOCOLS or []
 
 process_vector = (vector, cell, dom_parser, cont) =>
     # FIXME
@@ -112,7 +114,7 @@ synthesize_cell = (node, protocols, dom_parser) ->
         impls: {}
 
     # Protocols must be unique. This must be validated at the registration step.
-    all_the_protocols = _.uniq (protocols.concat get_default_protocols())
+    all_the_protocols = uniq (protocols.concat get_default_protocols())
 
     all_the_protocols.map (protocol) ->
         p = get_protocol protocol
