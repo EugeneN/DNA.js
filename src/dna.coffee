@@ -9,8 +9,9 @@ NAN = 'NaN'
 NULL = 'null'
 DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
-Math = require '../utils/Math.uuid'
-{uniq, partial, is_array, is_object, bool, complement, compose2} = require 'libprotein'
+BUILTIN = '*builtin*'
+
+{partial, is_array, is_object, bool, complement, compose3, distinct} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
 
@@ -30,7 +31,7 @@ parse_genome = (require 'genome-parser').parse
     lift_sync, lift_async
 } = require 'libmonad'
 
-{info, warn, error, debug} = dispatch_impl 'ILogger'
+{info, warn, error, debug} = dispatch_impl 'ILogger', 'DNA'
 devnull = ->
 
 CELLS = {}
@@ -55,7 +56,7 @@ process_vector = (vector, cell, dom_parser, cont) =>
             count--
             res[idx] = i.value
         else
-            h = (parse_ast_handler_node i, cell, dom_parser).impl
+            h = (process_ast_handler_node i, cell, dom_parser).impl
             if h.async
                 h (local_cont idx)
             else
@@ -69,10 +70,10 @@ is_data = (method) -> method.type in DNA_DATATYPES
 is_handler = complement is_data
 
 lift = (h) ->
-    if h.async
-        lift_async h.arity, h
+    if h.meta.async
+        lift_async h.meta.arity, h
     else
-        lift_sync h.arity, h
+        lift_sync h.meta.arity, h
 
 get_method_ns = (name, cell) ->
     method_invariants = cell.receptors[name]
@@ -114,7 +115,7 @@ synthesize_cell = (node, protocols, dom_parser) ->
         impls: {}
 
     # Protocols must be unique. This must be validated at the registration step.
-    all_the_protocols = uniq (protocols.concat get_default_protocols())
+    all_the_protocols = distinct (protocols.concat get_default_protocols())
 
     all_the_protocols.map (protocol) ->
         p = get_protocol protocol
@@ -166,29 +167,36 @@ dispatch_handler_fn = (ns, method, cell, dom_parser) ->
     # FIXME
     switch method.type
         when STRING
-            {impl: -> method.value}
+            impl = -> method.value
+            impl.meta = {arity: 0, async: false, ns: BUILTIN, name: "String '#{method.value}'"}
+            {impl}
 
         when NUMBER
-            {impl: -> method.value}
+            impl = -> method.value
+            impl.meta = {arity: 0, async: false, ns: BUILTIN, name: "Number '#{method.value}'"}
+            {impl}
 
         when VECTOR
-            vector_handler = (cont) ->
+            impl = (cont) ->
                 process_vector method.value, cell, dom_parser, (res) ->
                     cont res
-
-            vector_handler.async = true
-            vector_handler.arity = 1
-
-            {impl: vector_handler}
+            impl.meta = {async: true, arity: 1, protocol: BUILTIN, name: "Vector"}
+            {impl}
 
         when HASHMAP
-            {impl: (key) -> if key then method.value[key] else method.value}
+            impl = (key) -> if key then method.value[key] else method.value
+            impl.meta = {arity: 1, async: false, protocol: BUILTIN, name: "Hashmap"}
+            {impl}
 
         when NAN
-            {impl: -> NaN}
+            impl = -> NaN
+            impl.meta = {arity: 0, async: false, protocol: BUILTIN, name: "NaN"}
+            {impl}
 
         when NULL
-            {impl: -> null}
+            impl = -> null
+            impl.meta = {arity: 0, async: false, protocol: BUILTIN, name: "null"}
+            {impl}
 
         else dispatch_handler ns?.name, method.name, cell
 
@@ -205,9 +213,10 @@ dna_to_host_value = (ast_node) ->
                 proto_val.value
 
     else
+        debug "Unexpected datatype received", ast_node
         throw "Unexpected datatype received"
 
-parse_ast_handler_node = (handler, current_cell, dom_parser) ->
+process_ast_handler_node = (handler, current_cell, dom_parser) ->
     {ns, method, scope} = if is_array handler then handler[0] else handler
 
     cell_id = scope?.name or THIS
@@ -217,16 +226,6 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
         ns?.name or (get_method_ns method.name, cell)
     else
         ns?.name
-
-    handler_is_async = if is_handler method
-        is_async handler_ns, method.name
-    else
-        null
-
-    handler_arity = if is_handler method
-        get_arity handler_ns, method.name
-    else
-        null
 
     unless cell
         error "Unknown cell referenced in handler", cell_id, handler
@@ -239,9 +238,6 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
     else
         handler_fn
 
-    real_handler.async or= if handler_is_async then true else false
-    real_handler.arity or= handler_arity
-
     {impl: real_handler}
 
 make_extended_node = (dom_parser, node) ->
@@ -250,10 +246,15 @@ make_extended_node = (dom_parser, node) ->
 
     save_cell (synthesize_cell node, protocols, dom_parser)
 
+process_meta = (cell, h) ->
+    # TODO
+    h
+
 make_monadized_handler = (dom_parser, cell, handlr) ->
     handlers_ast_list = if is_array handlr then handlr else [handlr]
-    ast_parser = (h) -> (parse_ast_handler_node h, cell, dom_parser).impl
-    lifted_handlers_chain = handlers_ast_list.map (compose2 lift, ast_parser)
+    ast_parser = (h) -> (process_ast_handler_node h, cell, dom_parser).impl
+    do_meta = partial process_meta, cell
+    lifted_handlers_chain = handlers_ast_list.map (compose3 lift, do_meta, ast_parser)
     wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), devnull)
 
     (init_val) ->
@@ -303,6 +304,7 @@ synthesize_node = (dom_parser) ->
 module.exports =
 # Entry point
     start_synthesis: ({root_node}={}) ->
+        info 'Synthesis started'
         root_idom = dispatch_impl 'IDom', root_node
 
         # TODO use MutationObserver instead when applicable
