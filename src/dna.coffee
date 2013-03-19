@@ -11,6 +11,8 @@ DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
 BUILTIN = '*builtin*'
 
+Math = require '../utils/Math.uuid'
+
 {partial, is_array, is_object, bool, complement, compose3, distinct} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
