@@ -9,7 +9,7 @@ NAN = 'NaN'
 NULL = 'null'
 DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
-
+Math = require '../utils/Math.uuid'
 {uniq, partial, is_array, is_object, bool, complement, compose2} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
