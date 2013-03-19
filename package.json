@@ -2,7 +2,7 @@
   "name": "dna-lang",
   "author": "E.Naumenko",
   "description": "",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "scripts": {"postinstall": "cake build"},
   "engine" : [ "node >=0.1.102" ],
   "main" : "./lib-js/dna.js",
