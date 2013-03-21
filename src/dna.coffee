@@ -1,13 +1,23 @@
 DNA_EXTEND = 'extend'
 DNA_SUBSCRIBE = 'subscribe'
 DNA_ID_PREFIX = 'Z'
-STRING = 'string'
-NUMBER = 'number'
-VECTOR = 'vector'
-HASHMAP = 'hashmap'
-NAN = 'NaN'
-NULL = 'null'
-DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
+
+NAN =       'NaN'
+NULL =      'null'
+KEYWORD =   'keyword'
+STRING =    'string'
+INTEGER =   'integer'
+FLOAT =     'float'
+VECTOR =    'vector'
+HASHMAP =   'hashmap'
+
+FUNCTION =  'fn'
+PARTIAL_FN = 'partial'
+NESTED_EXPR = 'nested'
+QUOTED_NESTED_EXPR = 'quoted-nested'
+
+DNA_PRIMITIVES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT]
+DNA_DATATYPES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP]
 THIS = 'this'
 BUILTIN = '*builtin*'
 
@@ -41,8 +51,8 @@ CELLS = {}
 get_default_protocols = ->
     (require 'bootstrapper')?.ENV?.DEFAULT_PROTOCOLS or []
 
-process_vector = (vector, cell, dom_parser, cont) =>
-    # FIXME
+process_vector = (vector, cell, dom_parser, cont) ->
+    # FIXME paralellize with arrows
     res = []
     count = vector.length
     local_cont = (idx) ->
@@ -53,23 +63,25 @@ process_vector = (vector, cell, dom_parser, cont) =>
             if count is 0
                 cont res
 
-    vector.map (i, idx) ->
-        if i.type in DNA_DATATYPES
-            count--
-            res[idx] = i.value
+    vector.map (ast_node, idx) ->
+        h = process_ast_handler_node cell, dom_parser, ast_node
+        if h.meta.async
+            h (local_cont idx)
         else
-            h = (process_ast_handler_node i, cell, dom_parser).impl
-            if h.async
-                h (local_cont idx)
-            else
-                ((local_cont idx) h())
+            ((local_cont idx) h())
 
 default_handlers_cont = (args...) ->
     #debug "DNA monadic sequence finished with results:", args
 
-is_data = (method) -> method.type in DNA_DATATYPES
+is_value = (type) -> type in DNA_DATATYPES
 
-is_handler = complement is_data
+is_function = (type) -> type in [FUNCTION, PARTIAL_FN]
+
+is_just_function = (type) -> type is FUNCTION
+
+is_partial_function = (type) -> type is PARTIAL_FN
+
+is_nested_expr = (type) -> type is NESTED_EXPR
 
 lift = (h) ->
     if h.meta.async
@@ -91,13 +103,13 @@ dispatch_handler = (ns, name, cell) ->
     method_invariants = cell.receptors[name]
 
     if method_invariants
-        if method_invariants.length is 1 and not ns
-            handler =  method_invariants[0]
+        handler = if method_invariants.length is 1 and not ns
+            method_invariants[0]
         else
-            handler = (cell.receptors[name].filter (m) -> m.ns is ns)[0]
+            (cell.receptors[name].filter (m) -> m.ns is ns)[0]
 
         if handler
-            handler
+            handler.impl
         else
             error "Handler missing", {ns, name, cell}
             throw "Handler missing"
@@ -124,16 +136,16 @@ synthesize_cell = (node, protocols, dom_parser) ->
         proto_cell.impls[protocol] = dispatch_impl protocol, node
 
         if p and proto_cell.impls[protocol]
-            p.map ([method, args]) ->
+            p.map ([name, args]) ->
                 m =
-                    name: method
+                    name: name
                     ns: protocol
-                    impl: proto_cell.impls[protocol][method]
+                    impl: proto_cell.impls[protocol][name]
 
-                if proto_cell.receptors[method]
-                    proto_cell.receptors[method].push m
+                if proto_cell.receptors[name]
+                    proto_cell.receptors[name].push m
                 else
-                    proto_cell.receptors[method] = [m]
+                    proto_cell.receptors[name] = [m]
 
     proto_cell
 
@@ -165,129 +177,188 @@ get_create_cell_by_id = (id, dom_parser) ->
     else
         null
 
-dispatch_handler_fn = (ns, method, cell, dom_parser) ->
-    # FIXME
-    switch method.type
-        when STRING
-            impl = -> method.value
-            impl.meta = {arity: 0, async: false, ns: BUILTIN, name: "String '#{method.value}'"}
-            {impl}
+fun_with_meta = (fn, meta) ->
+    fn.meta = meta
+    fn
 
-        when NUMBER
-            impl = -> method.value
-            impl.meta = {arity: 0, async: false, ns: BUILTIN, name: "Number '#{method.value}'"}
-            {impl}
-
-        when VECTOR
-            impl = (cont) ->
-                process_vector method.value, cell, dom_parser, (res) ->
-                    cont res
-            impl.meta = {async: true, arity: 1, protocol: BUILTIN, name: "Vector"}
-            {impl}
-
-        when HASHMAP
-            impl = (key) -> if key then method.value[key] else method.value
-            impl.meta = {arity: 1, async: false, protocol: BUILTIN, name: "Hashmap"}
-            {impl}
-
+get_primitive_value_handler = (type, value) ->
+    switch type
         when NAN
-            impl = -> NaN
-            impl.meta = {arity: 0, async: false, protocol: BUILTIN, name: "NaN"}
-            {impl}
-
+            fun_with_meta (-> NaN), {arity: 0, async: false, protocol: BUILTIN, name: "NaN"}
         when NULL
-            impl = -> null
-            impl.meta = {arity: 0, async: false, protocol: BUILTIN, name: "null"}
-            {impl}
+            fun_with_meta (-> null), {arity: 0, async: false, protocol: BUILTIN, name: "null"}
+        when KEYWORD
+            fun_with_meta (-> value), {arity: 0, async: false, protocol: BUILTIN, name: "Keyword #{value}"}
+        when STRING
+            fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "String '#{value}'"}
+        when INTEGER
+            fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "Integer '#{value}'"}
+        when FLOAT
+            fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "Float '#{value}'"}
+        else
+            throw "Unknown primitive type: #{type}/#{value}"
 
-        else dispatch_handler ns?.name, method.name, cell
+get_value_handler = (type, value, cell, dom_parser) ->
+    switch type
+        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT
+            get_primitive_value_handler type, value
+        when VECTOR
+            fun_with_meta(
+                (cont) ->
+                    process_vector value, cell, dom_parser, (res) ->
+                        cont res
+                {async: true, arity: 1, protocol: BUILTIN, name: "Vector"}
+            )
+        when HASHMAP
+            fun_with_meta(
+                (key) -> if key then value[key] else value
+                {arity: 1, async: false, protocol: BUILTIN, name: "Hashmap"}
+            )
+        else
+            throw "Unknown type: #{type}"
 
-dna_to_host_value = (ast_node) ->
-    proto_val = ast_node.method or ast_node
+make_nested_expr = (dom_parser, current_cell, handler) ->
+    # will build strictly on initialization
+    # f = make_monadized_handler dom_parser, current_cell, cont, handler
+    fun_with_meta(
+        (cont) ->
+            # will build lazy on invocation
+            f = make_monadized_handler dom_parser, current_cell, cont, handler
+            f 'here we go'
 
-    if proto_val.type
-        switch proto_val.type
-            when VECTOR
-                proto_val.value.map (i) -> dna_to_host_value i
-            when HASHMAP
-                throw "Not implemented" # TODO
+        {async: true, arity: 1, protocol: BUILTIN, name: NESTED_EXPR}
+    )
+
+
+process_ast_handler_node = (current_cell, dom_parser, handler) ->
+    _get_cell = (id) ->
+        cell = find_cell id, current_cell, dom_parser
+
+        unless cell
+            error "Unknown cell referenced in handler", id, handler
+            throw "Unknown cell referenced in handler"
+
+        cell
+
+    switch handler.type
+        when FUNCTION
+            dispatch_handler handler.ns, handler.name, (_get_cell (handler.scope or THIS))
+
+        when PARTIAL_FN
+            USE_LAZY_PARTIAL_ARGS = true
+
+            h = (dispatch_handler handler.fn.ns,
+                                  handler.fn.name,
+                                  (_get_cell (handler.fn.scope or THIS)))
+
+            if USE_LAZY_PARTIAL_ARGS
+                ## lazy args
+                {vargs, arity} = h.meta
+
+                fun_with_meta(
+                    (args...) ->
+                        # TODO vargs support
+                        accepted_args = args[0...arity]
+
+                        process_vector handler.args, current_cell, dom_parser, (calculated_args) ->
+                            if h.meta.async
+                                h (calculated_args.concat accepted_args)...
+                            else
+                                [raw_accepted_args..., cont] = accepted_args
+                                cont (h (calculated_args.concat raw_accepted_args)...)
+
+                    arity: arity
+                    async: true
+                    name: "partial application of #{h.meta.name}"
+                    protocol: h.meta.protocol
+                )
+
             else
-                proto_val.value
+                ## strict args, only sync
+                (partial h, (handler.args.map ({type, value}) ->
+                    unless type in DNA_PRIMITIVES
+                        throw "Only primitive datatypes accepted as partial args"
+                    (get_primitive_value_handler type, value)())...)
 
-    else
-        debug "Unexpected datatype received", ast_node
-        throw "Unexpected datatype received"
+        when NESTED_EXPR
+            make_nested_expr dom_parser, current_cell, handler.value
 
-process_ast_handler_node = (handler, current_cell, dom_parser) ->
-    {ns, method, scope} = if is_array handler then handler[0] else handler
+        when QUOTED_NESTED_EXPR
+            throw "QUOTED_NESTED_EXPR is not implemented yet"
 
-    cell_id = scope?.name or THIS
-    cell = find_cell cell_id, current_cell, dom_parser
+        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP
+            (get_value_handler handler.type,
+                               handler.value,
+                               (_get_cell (handler.scope or THIS)),
+                               dom_parser)
 
-    handler_ns = if is_handler method
-        ns?.name or (get_method_ns method.name, cell)
-    else
-        ns?.name
+        else
+            error "Unknown expression type: #{handler.type}", handler
+            throw "Unknown expression type: #{handler.type}"
 
-    unless cell
-        error "Unknown cell referenced in handler", cell_id, handler
-        throw "Unknown cell referenced in handler"
-
-    handler_fn = (dispatch_handler_fn ns, method, cell, dom_parser).impl
-
-    real_handler = if is_array handler
-        partial handler_fn, (handler[1...].map dna_to_host_value)...
-    else
-        handler_fn
-
-    {impl: real_handler}
 
 make_extended_node = (dom_parser, node) ->
     protocols = ((dom_parser.getData DNA_EXTEND, node).split " ").filter (i) -> !!i
-    #debug "Protocols found for", node, ":", protocols
-
     save_cell (synthesize_cell node, protocols, dom_parser)
 
 process_meta = (cell, h) ->
     # TODO
     h
 
-make_monadized_handler = (dom_parser, cell, handlr) ->
-    handlers_ast_list = if is_array handlr then handlr else [handlr]
-    ast_parser = (h) -> (process_ast_handler_node h, cell, dom_parser).impl
+make_monadized_handler = (dom_parser, cell, cont, handlr) ->
+    ast_parser = partial process_ast_handler_node, cell, dom_parser
     do_meta = partial process_meta, cell
-    lifted_handlers_chain = handlers_ast_list.map (compose3 lift, do_meta, ast_parser)
+    lifted_handlers_chain = handlr.seq.map (compose3 lift, do_meta, ast_parser)
     wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), devnull)
 
-    (init_val) ->
-        #debug "Starting DNA monadic sequence with arguments:", init_val
-        (domonad wrapper_monad, lifted_handlers_chain, init_val) default_handlers_cont
+    fun_with_meta(
+        (init_val) ->
+            #debug "Starting DNA monadic sequence with arguments:", init_val
+            (domonad wrapper_monad, lifted_handlers_chain, init_val) cont
 
-interpose_handlers_with_events = (dom_parser, cell, handlers, evs_args) ->
-    [{ns, event, scope}, raw_args...] = if is_array evs_args then evs_args else [evs_args, []]
-    args = (raw_args.filter (a) -> a.event.type in DNA_DATATYPES).map (a) -> a.event.value
+        {async: true, arity: 1, name: 'monadized-handler'}
+    )
 
+bind_handlers_to_event = (dom_parser, cell, handlers, event_node) ->
+    {type, args, name, ns, scope} = if event_node.type is 'partial-event'
+        type:   'partial-event'
+        args:   event_node.args.map (partial process_ast_handler_node,
+                                             cell,
+                                             dom_parser)
+        name:   event_node.event.name
+        ns:     event_node.event.ns
+        scope:  event_node.event.scope
+    else
+        type:   'event'
+        args:   []
+        name:   event_node.name
+        ns:     event_node.ns
+        scope:  event_node.scope
+
+    event_binder = (dispatch_handler ns,
+                                     name,
+                                     (find_cell (scope or THIS),
+                                                cell,
+                                                dom_parser))
+    # TBD delegate this later
     handlers.map (handlr) ->
-        # TBD delegate this later
-        (dispatch_handler ns?.name,
-                          event.name,
-                          (find_cell (scope?.name or THIS),
-                                     cell,
-                                     dom_parser)).impl (args.concat [handlr])...
+        event_binder (args.concat [handlr])...
+
 
 make_subscribed_node = (dom_parser, node) ->
     cell = get_create_cell node.id, node, dom_parser
 
-    dna_sequences = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
-    #debug "DNA AST for", cell, ":", dna_sequences
+    genes = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
+    # debug "DNA AST for", cell, ":", genes
 
-    dna_sequences.map (dna_seq) ->
-        dna_seq.events.map (partial interpose_handlers_with_events,
-                                    dom_parser,
-                                    cell,
-                                    (dna_seq.handlers.map (partial make_monadized_handler,
-                                                                   dom_parser,
-                                                                   cell)))
+    genes.map (gene) ->
+        gene.events.map (partial bind_handlers_to_event,
+                                 dom_parser,
+                                 cell,
+                                 (gene.handlers.map (partial make_monadized_handler,
+                                                             dom_parser,
+                                                             cell,
+                                                             default_handlers_cont)))
 
 synthesize_node = (dom_parser) ->
     START_TIME = new Date
@@ -304,9 +375,14 @@ synthesize_node = (dom_parser) ->
     #debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 module.exports =
-# Entry point
-    start_synthesis: ({root_node}={}) ->
+    start_synthesis: (root_node) ->
+        # Entry point
+        unless root_node
+            error "Root node not specified"
+            throw "Root node not specified"
+
         info 'Synthesis started'
+
         root_idom = dispatch_impl 'IDom', root_node
 
         # TODO use MutationObserver instead when applicable

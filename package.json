@@ -1,16 +1,25 @@
 {
   "name": "dna-lang",
-  "author": "E.Naumenko",
-  "description": "",
-  "version": "0.2.0",
-  "scripts": {"postinstall": "cake build"},
-  "engine" : [ "node >=0.1.102" ],
-  "main" : "./lib-js/dna.js",
+  "author": {
+    "name": "E.Naumenko"
+  },
+  "description": "DNA.js ======",
+  "version": "0.2.1",
+  "scripts": {
+    "postinstall": "cake build"
+  },
+  "engine": [
+    "node >=0.1.102"
+  ],
+  "main": "./lib-js/dna.js",
   "dependencies": {
     "libmonad": "*",
     "libprotein": "*",
     "libprotocol": "*",
     "genome-parser": "*"
   },
-  "readmeFilename": "README.md"
+  "readmeFilename": "README.md",
+  "readme": "DNA.js\n======\n\nAn approach to build CS apps using composable abstractions and declarative bindings.\n",
+  "_id": "dna-lang@0.2.0",
+  "_from": "dna-lang@"
 }
