@@ -23,7 +23,8 @@ BUILTIN = '*builtin*'
 
 Math = require '../utils/Math.uuid'
 
-{partial, is_array, is_object, bool, complement, compose3, distinct} = require 'libprotein'
+{partial, is_array, is_object, bool,
+ complement, compose3, distinct, repeat} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
 
@@ -43,8 +44,8 @@ parse_genome = (require 'genome-parser').parse
     lift_sync, lift_async
 } = require 'libmonad'
 
-{info, warn, error, debug} = dispatch_impl 'ILogger', 'DNA'
-devnull = ->
+{info, warn, error, debug, nullog} = dispatch_impl 'ILogger', 'DNA'
+
 
 CELLS = {}
 
@@ -65,10 +66,13 @@ process_vector = (vector, cell, dom_parser, cont) ->
 
     vector.map (ast_node, idx) ->
         h = process_ast_handler_node cell, dom_parser, ast_node
+        c = (local_cont idx)
+
+        # vector currently passes no arguments to its member
         if h.meta.async
-            h (local_cont idx)
+            h ((repeat undefined, h.meta.arity-1).concat [c])...
         else
-            ((local_cont idx) h())
+            c (h (repeat undefined, h.meta.arity)...)
 
 default_handlers_cont = (args...) ->
     #debug "DNA monadic sequence finished with results:", args
@@ -221,12 +225,12 @@ make_nested_expr = (dom_parser, current_cell, handler) ->
     # will build strictly on initialization
     # f = make_monadized_handler dom_parser, current_cell, cont, handler
     fun_with_meta(
-        (cont) ->
+        (arg, cont) ->
             # will build lazy on invocation
             f = make_monadized_handler dom_parser, current_cell, cont, handler
-            f 'here we go'
+            f arg
 
-        {async: true, arity: 1, protocol: BUILTIN, name: NESTED_EXPR}
+        {async: true, arity: 2, protocol: BUILTIN, name: NESTED_EXPR}
     )
 
 
@@ -309,7 +313,7 @@ make_monadized_handler = (dom_parser, cell, cont, handlr) ->
     ast_parser = partial process_ast_handler_node, cell, dom_parser
     do_meta = partial process_meta, cell
     lifted_handlers_chain = handlr.seq.map (compose3 lift, do_meta, ast_parser)
-    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), devnull)
+    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), nullog)
 
     fun_with_meta(
         (init_val) ->
