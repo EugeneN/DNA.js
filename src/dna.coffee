@@ -379,6 +379,10 @@ synthesize_node = (dom_parser) ->
     #debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 module.exports =
+    get_cells: -> CELLS
+
+    get_cell: get_cell
+
     start_synthesis: (root_node) ->
         # Entry point
         unless root_node
