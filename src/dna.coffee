@@ -121,38 +121,6 @@ dispatch_handler = (ns, name, cell) ->
         error "Handler missing", {ns, name, cell}
         throw "Handler missing"
 
-synthesize_cell = (node, protocols, dom_parser) ->
-    unless node.id
-        # id must start with a word char (or the grammar has to be updated)
-        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid()
-
-    proto_cell =
-        id: node.id
-        node: node
-        receptors: {}
-        impls: {}
-
-    # Protocols must be unique. This must be validated at the registration step.
-    all_the_protocols = distinct (protocols.concat get_default_protocols())
-
-    all_the_protocols.map (protocol) ->
-        p = get_protocol protocol
-        proto_cell.impls[protocol] = dispatch_impl protocol, node
-
-        if p and proto_cell.impls[protocol]
-            p.map ([name, args]) ->
-                m =
-                    name: name
-                    ns: protocol
-                    impl: proto_cell.impls[protocol][name]
-
-                if proto_cell.receptors[name]
-                    proto_cell.receptors[name].push m
-                else
-                    proto_cell.receptors[name] = [m]
-
-    proto_cell
-
 save_cell = (cell) -> CELLS[cell.id] = cell
 
 get_cell = (id) -> CELLS[id]
@@ -162,22 +130,14 @@ find_cell = (scope_id, this_cell, dom_parser) ->
         this_cell
     else if cell = get_cell scope_id
         cell
-    else if cell = get_create_cell_by_id scope_id, dom_parser
+    else if cell = create_cell_by_id scope_id, dom_parser, this_cell.synthesis_id
         cell
     else
         null
 
-get_create_cell = (id, node, dom_parser) ->
-    # if cell = get_cell id
-    #     cell
-    # else
-    cell = synthesize_cell node, get_default_protocols(), dom_parser
-    save_cell cell
-    cell
-
-get_create_cell_by_id = (id, dom_parser) ->
+create_cell_by_id = (id, dom_parser, synthesis_id) ->
     if node = dom_parser.get_by_id id
-        get_create_cell id, node, dom_parser
+        create_cell dom_parser, synthesis_id, node
     else
         null
 
@@ -232,7 +192,6 @@ make_nested_expr = (dom_parser, current_cell, handler) ->
 
         {async: true, arity: 2, protocol: BUILTIN, name: NESTED_EXPR}
     )
-
 
 process_ast_handler_node = (current_cell, dom_parser, handler) ->
     _get_cell = (id) ->
@@ -300,11 +259,6 @@ process_ast_handler_node = (current_cell, dom_parser, handler) ->
             error "Unknown expression type: #{handler.type}", handler
             throw "Unknown expression type: #{handler.type}"
 
-
-make_extended_node = (dom_parser, node) ->
-    protocols = ((dom_parser.getData DNA_EXTEND, node).split " ").filter (i) -> !!i
-    save_cell (synthesize_cell node, protocols, dom_parser)
-
 process_meta = (cell, h) ->
     # TODO
     h
@@ -348,33 +302,84 @@ bind_handlers_to_event = (dom_parser, cell, handlers, event_node) ->
     handlers.map (handlr) ->
         event_binder (args.concat [handlr])...
 
+process_subscribe = (cell) ->
+    return if cell.subscriptions_processed
 
-make_subscribed_node = (dom_parser, node) ->
-    cell = get_create_cell node.id, node, dom_parser
+    cell.subscriptions_processed = true
 
-    genes = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
-    # debug "DNA AST for", cell, ":", genes
+    genome_string = cell.dom_parser.getData DNA_SUBSCRIBE, cell.node
+    if (bool genome_string)
+        genes = parse_genome genome_string
+        # debug "DNA AST for", cell, ":", genes
 
-    genes.map (gene) ->
-        gene.events.map (partial bind_handlers_to_event,
-                                 dom_parser,
-                                 cell,
-                                 (gene.handlers.map (partial make_monadized_handler,
-                                                             dom_parser,
-                                                             cell,
-                                                             default_handlers_cont)))
+        genes.map (gene) ->
+            gene.events.map (partial bind_handlers_to_event,
+                                     cell.dom_parser,
+                                     cell,
+                                     (gene.handlers.map (partial make_monadized_handler,
+                                                                 cell.dom_parser,
+                                                                 cell,
+                                                                 default_handlers_cont)))
+
+synthesize_cell = (node, dom_parser, synthesis_id) ->
+    unless node.id
+        # id must start with a word char (or the grammar has to be updated)
+        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid()
+
+    proto_cell =
+        id: node.id
+        node: node
+        receptors: {}
+        impls: {}
+        dom_parser: dom_parser
+        synthesis_id: synthesis_id
+
+    # Protocols must be unique. This must be validated at the registration step.
+
+    extended_protocols = if extended_protocols = dom_parser.getData DNA_EXTEND, node
+        (extended_protocols.split ' ').filter (i) -> !!i
+    else
+        []
+
+    all_the_protocols = distinct (extended_protocols.concat get_default_protocols())
+
+    all_the_protocols.map (protocol) ->
+        p = get_protocol protocol
+        proto_cell.impls[protocol] = dispatch_impl protocol, node
+
+        if p and proto_cell.impls[protocol]
+            p.map ([name, args]) ->
+                m =
+                    name: name
+                    ns: protocol
+                    impl: proto_cell.impls[protocol][name]
+
+                if proto_cell.receptors[name]
+                    proto_cell.receptors[name].push m
+                else
+                    proto_cell.receptors[name] = [m]
+
+
+
+    proto_cell
+
+create_cell = (dom_parser, synthesis_id, node) ->
+    cell = synthesize_cell node, dom_parser, synthesis_id
+    save_cell cell
+    cell
 
 synthesize_node = (dom_parser) ->
     START_TIME = new Date
+    synthesis_id = Math.uuid()
 
     root_node = dom_parser.get_root_node()
     # debug 'Cells synthesis started for node', root_node
 
-    extended_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}]"
-    subscribed_nodes = dom_parser.get_by_attr "[data-#{DNA_SUBSCRIBE}]"
+    active_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}]"
+    processor = partial create_cell, dom_parser, synthesis_id
 
-    extended_nodes.map (partial make_extended_node, dom_parser)
-    subscribed_nodes.map (partial make_subscribed_node, dom_parser)
+    new_cells = active_nodes.map (node) -> processor node
+    new_cells.map (cell) -> process_subscribe cell
 
     # debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
