@@ -124,7 +124,7 @@ dispatch_handler = (ns, name, cell) ->
 synthesize_cell = (node, protocols, dom_parser) ->
     unless node.id
         # id must start with a word char (or the grammar has to be updated)
-        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid().replace(/-/g, '_')
+        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid()
 
     proto_cell =
         id: node.id
@@ -168,12 +168,12 @@ find_cell = (scope_id, this_cell, dom_parser) ->
         null
 
 get_create_cell = (id, node, dom_parser) ->
-    if cell = get_cell id
-        cell
-    else
-        cell = synthesize_cell node, get_default_protocols(), dom_parser
-        save_cell cell
-        cell
+    # if cell = get_cell id
+    #     cell
+    # else
+    cell = synthesize_cell node, get_default_protocols(), dom_parser
+    save_cell cell
+    cell
 
 get_create_cell_by_id = (id, dom_parser) ->
     if node = dom_parser.get_by_id id
@@ -368,7 +368,7 @@ synthesize_node = (dom_parser) ->
     START_TIME = new Date
 
     root_node = dom_parser.get_root_node()
-    #debug 'Cells synthesis started for node', root_node
+    # debug 'Cells synthesis started for node', root_node
 
     extended_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}]"
     subscribed_nodes = dom_parser.get_by_attr "[data-#{DNA_SUBSCRIBE}]"
@@ -376,7 +376,7 @@ synthesize_node = (dom_parser) ->
     extended_nodes.map (partial make_extended_node, dom_parser)
     subscribed_nodes.map (partial make_subscribed_node, dom_parser)
 
-    #debug "Cells synthesis completed in #{new Date - START_TIME}ms."
+    # debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 module.exports =
     get_cells: -> CELLS
