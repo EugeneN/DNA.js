@@ -369,13 +369,20 @@ synthesize_cell = (node, dom_parser, synthesis_id) ->
     proto_cell
 
 create_cell = (dom_parser, synthesis_id, node) ->
-    cell = synthesize_cell node, dom_parser, synthesis_id
+    maybe_id = node.id
+    sid = if maybe_id and (old_cell = get_cell maybe_id)
+        debug "Reinstantiating cell with id #{maybe_id}"
+        old_cell.synthesis_id + 1
+    else
+        synthesis_id
+
+    cell = synthesize_cell node, dom_parser, sid
     save_cell cell
     cell
 
 synthesize_node = (dom_parser) ->
     START_TIME = new Date
-    synthesis_id = Math.uuid()
+    synthesis_id = 0
 
     root_node = dom_parser.get_root_node()
     # debug 'Cells synthesis started for node', root_node
