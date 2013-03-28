@@ -302,6 +302,13 @@ bind_handlers_to_event = (dom_parser, cell, handlers, event_node) ->
     handlers.map (handlr) ->
         event_binder (args.concat [handlr])...
 
+make_dynamic_handler = (dom_parser, cell, cont, handlr) ->
+    (args...) ->
+        fresh_cell = find_cell cell.id, cell, dom_parser
+        h = make_monadized_handler dom_parser, fresh_cell, cont, handlr
+        h args
+
+
 process_subscribe = (cell) ->
     return if cell.subscriptions_processed
 
@@ -316,7 +323,7 @@ process_subscribe = (cell) ->
             gene.events.map (partial bind_handlers_to_event,
                                      cell.dom_parser,
                                      cell,
-                                     (gene.handlers.map (partial make_monadized_handler,
+                                     (gene.handlers.map (partial make_dynamic_handler,
                                                                  cell.dom_parser,
                                                                  cell,
                                                                  default_handlers_cont)))
