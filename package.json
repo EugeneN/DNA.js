@@ -4,10 +4,11 @@
     "name": "E.Naumenko"
   },
   "description": "DNA.js ======",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "scripts": {
     "postinstall": "cake build"
   },
+  "cafebuild": "cake build",
   "engine": [
     "node >=0.1.102"
   ],

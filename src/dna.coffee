@@ -359,8 +359,6 @@ synthesize_cell = (node, dom_parser, synthesis_id) ->
                 else
                     proto_cell.receptors[name] = [m]
 
-
-
     proto_cell
 
 create_cell = (dom_parser, synthesis_id, node) ->
