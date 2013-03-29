@@ -387,10 +387,10 @@ synthesize_node = (dom_parser) ->
     root_node = dom_parser.get_root_node()
     # debug 'Cells synthesis started for node', root_node
 
-    active_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}]"
-    processor = partial create_cell, dom_parser, synthesis_id
+    active_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}], [id]"
+    creator = partial create_cell, dom_parser, synthesis_id
 
-    new_cells = active_nodes.map (node) -> processor node
+    new_cells = active_nodes.map (node) -> creator node
     new_cells.map (cell) -> process_subscribe cell
 
     # debug "Cells synthesis completed in #{new Date - START_TIME}ms."
