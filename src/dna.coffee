@@ -306,8 +306,7 @@ make_dynamic_handler = (dom_parser, cell, cont, handlr) ->
     (args...) ->
         fresh_cell = find_cell cell.id, cell, dom_parser
         h = make_monadized_handler dom_parser, fresh_cell, cont, handlr
-        h args
-
+        h args...
 
 process_subscribe = (cell) ->
     return if cell.subscriptions_processed
