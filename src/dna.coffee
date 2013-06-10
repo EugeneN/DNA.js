@@ -49,10 +49,8 @@ parse_genome = (require 'genome-parser').parse
 
 CELLS = {}
 
-get_default_protocols = ->
-    (require 'bootstrapper')?.ENV?.DEFAULT_PROTOCOLS or []
 
-process_vector = (vector, cell, dom_parser, cont) ->
+process_vector = (vector, cell, ctx, cont) ->
     # FIXME paralellize with arrows
     res = []
     count = vector.length
@@ -65,7 +63,7 @@ process_vector = (vector, cell, dom_parser, cont) ->
                 cont res
 
     vector.map (ast_node, idx) ->
-        h = process_ast_handler_node cell, dom_parser, ast_node
+        h = process_ast_handler_node cell, ctx, ast_node
         c = (local_cont idx)
 
         # vector currently passes no arguments to its member
@@ -125,19 +123,19 @@ save_cell = (cell) -> CELLS[cell.id] = cell
 
 get_cell = (id) -> CELLS[id]
 
-find_cell = (scope_id, this_cell, dom_parser) ->
+find_cell = (scope_id, this_cell, ctx) ->
     if (scope_id is THIS or not scope_id) and this_cell
         this_cell
     else if cell = get_cell scope_id
         cell
-    else if cell = create_cell_by_id scope_id, dom_parser, this_cell.synthesis_id
+    else if cell = create_cell_by_id scope_id, ctx, this_cell.synthesis_id
         cell
     else
         null
 
-create_cell_by_id = (id, dom_parser, synthesis_id) ->
-    if node = dom_parser.get_by_id id
-        create_cell dom_parser, synthesis_id, node
+create_cell_by_id = (id, ctx, synthesis_id) ->
+    if node = ctx.dom_parser.get_by_id id
+        create_cell ctx, synthesis_id, node
     else
         null
 
@@ -162,14 +160,14 @@ get_primitive_value_handler = (type, value) ->
         else
             throw "Unknown primitive type: #{type}/#{value}"
 
-get_value_handler = (type, value, cell, dom_parser) ->
+get_value_handler = (type, value, cell, ctx) ->
     switch type
         when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT
             get_primitive_value_handler type, value
         when VECTOR
             fun_with_meta(
                 (cont) ->
-                    process_vector value, cell, dom_parser, (res) ->
+                    process_vector value, cell, ctx, (res) ->
                         cont res
                 {async: true, arity: 1, protocol: BUILTIN, name: "Vector"}
             )
@@ -181,21 +179,21 @@ get_value_handler = (type, value, cell, dom_parser) ->
         else
             throw "Unknown type: #{type}"
 
-make_nested_expr = (dom_parser, current_cell, handler) ->
+make_nested_expr = (ctx, current_cell, handler) ->
     # will build strictly on initialization
-    # f = make_monadized_handler dom_parser, current_cell, cont, handler
+    # f = make_monadized_handler ctx, current_cell, cont, handler
     fun_with_meta(
         (arg, cont) ->
-            # will build lazy on invocation
-            f = make_monadized_handler dom_parser, current_cell, cont, handler
+            # will build lazyly on invocation
+            f = make_monadized_handler ctx, current_cell, cont, handler
             f arg
 
         {async: true, arity: 2, protocol: BUILTIN, name: NESTED_EXPR}
     )
 
-process_ast_handler_node = (current_cell, dom_parser, handler) ->
+process_ast_handler_node = (current_cell, ctx, handler) ->
     _get_cell = (id) ->
-        cell = find_cell id, current_cell, dom_parser
+        cell = find_cell id, current_cell, ctx
 
         unless cell
             error "Unknown cell referenced in handler", id, handler
@@ -223,7 +221,7 @@ process_ast_handler_node = (current_cell, dom_parser, handler) ->
                         # TODO vargs support
                         accepted_args = args[0...arity]
 
-                        process_vector handler.args, current_cell, dom_parser, (calculated_args) ->
+                        process_vector handler.args, current_cell, ctx, (calculated_args) ->
                             if h.meta.async
                                 h (calculated_args.concat accepted_args)...
                             else
@@ -244,7 +242,7 @@ process_ast_handler_node = (current_cell, dom_parser, handler) ->
                     (get_primitive_value_handler type, value)())...)
 
         when NESTED_EXPR
-            make_nested_expr dom_parser, current_cell, handler.value
+            make_nested_expr ctx, current_cell, handler.value
 
         when QUOTED_NESTED_EXPR
             throw "QUOTED_NESTED_EXPR is not implemented yet"
@@ -253,7 +251,7 @@ process_ast_handler_node = (current_cell, dom_parser, handler) ->
             (get_value_handler handler.type,
                                handler.value,
                                (_get_cell (handler.scope or THIS)),
-                               dom_parser)
+                               ctx)
 
         else
             error "Unknown expression type: #{handler.type}", handler
@@ -263,8 +261,8 @@ process_meta = (cell, h) ->
     # TODO
     h
 
-make_monadized_handler = (dom_parser, cell, cont, handlr) ->
-    ast_parser = partial process_ast_handler_node, cell, dom_parser
+make_monadized_handler = (ctx, cell, cont, handlr) ->
+    ast_parser = partial process_ast_handler_node, cell, ctx
     do_meta = partial process_meta, cell
     lifted_handlers_chain = handlr.seq.map (compose3 lift, do_meta, ast_parser)
     wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), nullog)
@@ -277,12 +275,12 @@ make_monadized_handler = (dom_parser, cell, cont, handlr) ->
         {async: true, arity: 1, name: 'monadized-handler'}
     )
 
-bind_handlers_to_event = (dom_parser, cell, handlers, event_node) ->
+bind_handlers_to_event = (ctx, cell, handlers, event_node) ->
     {type, args, name, ns, scope} = if event_node.type is 'partial-event'
         type:   'partial-event'
         args:   event_node.args.map (partial process_ast_handler_node,
                                              cell,
-                                             dom_parser)
+                                             ctx)
         name:   event_node.event.name
         ns:     event_node.event.ns
         scope:  event_node.event.scope
@@ -297,15 +295,15 @@ bind_handlers_to_event = (dom_parser, cell, handlers, event_node) ->
                                      name,
                                      (find_cell (scope or THIS),
                                                 cell,
-                                                dom_parser))
+                                                ctx))
     # TBD delegate this later
     handlers.map (handlr) ->
         event_binder (args.concat [handlr])...
 
-make_dynamic_handler = (dom_parser, cell, cont, handlr) ->
+make_dynamic_handler = (ctx, cell, cont, handlr) ->
     (args...) ->
-        fresh_cell = find_cell cell.id, cell, dom_parser
-        h = make_monadized_handler dom_parser, fresh_cell, cont, handlr
+        fresh_cell = find_cell cell.id, cell, ctx
+        h = make_monadized_handler ctx, fresh_cell, cont, handlr
         h args...
 
 process_subscribe = (cell) ->
@@ -313,41 +311,41 @@ process_subscribe = (cell) ->
 
     cell.subscriptions_processed = true
 
-    genome_string = cell.dom_parser.getData DNA_SUBSCRIBE, cell.node
+    genome_string = cell.ctx.dom_parser.getData DNA_SUBSCRIBE, cell.node
     if (bool genome_string)
         genes = parse_genome genome_string
         # debug "DNA AST for", cell, ":", genes
 
         genes.map (gene) ->
             gene.events.map (partial bind_handlers_to_event,
-                                     cell.dom_parser,
+                                     cell.ctx,
                                      cell,
                                      (gene.handlers.map (partial make_dynamic_handler,
-                                                                 cell.dom_parser,
+                                                                 cell.ctx,
                                                                  cell,
                                                                  default_handlers_cont)))
 
-synthesize_cell = (node, dom_parser, synthesis_id) ->
+synthesize_cell = (node, ctx, synthesis_id) ->
     unless node.id
         # id must start with a word char (or the grammar has to be updated)
-        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid()
+        node.id = (ctx.dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid()
 
     proto_cell =
         id: node.id
         node: node
         receptors: {}
         impls: {}
-        dom_parser: dom_parser
+        ctx: ctx
         synthesis_id: synthesis_id
 
     # Protocols must be unique. This must be validated at the registration step.
 
-    extended_protocols = if extended_protocols = dom_parser.getData DNA_EXTEND, node
+    extended_protocols = if extended_protocols = ctx.dom_parser.getData DNA_EXTEND, node
         (extended_protocols.split ' ').filter (i) -> !!i
     else
         []
 
-    all_the_protocols = distinct (extended_protocols.concat get_default_protocols())
+    all_the_protocols = distinct (extended_protocols.concat ctx.default_protocols)
 
     all_the_protocols.map (protocol) ->
         p = get_protocol protocol
@@ -367,7 +365,7 @@ synthesize_cell = (node, dom_parser, synthesis_id) ->
 
     proto_cell
 
-create_cell = (dom_parser, synthesis_id, node) ->
+create_cell = (ctx, synthesis_id, node) ->
     maybe_id = node.id
     sid = if maybe_id and (old_cell = get_cell maybe_id)
         debug "Reinstantiating cell with id #{maybe_id}"
@@ -375,19 +373,19 @@ create_cell = (dom_parser, synthesis_id, node) ->
     else
         synthesis_id
 
-    cell = synthesize_cell node, dom_parser, sid
+    cell = synthesize_cell node, ctx, sid
     save_cell cell
     cell
 
-synthesize_node = (dom_parser) ->
+synthesize_node = (ctx) ->
     START_TIME = new Date
     synthesis_id = 0
 
-    root_node = dom_parser.get_root_node()
+    root_node = ctx.dom_parser.get_root_node()
     # debug 'Cells synthesis started for node', root_node
 
-    active_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}], [id]"
-    creator = partial create_cell, dom_parser, synthesis_id
+    active_nodes = ctx.dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}], [id]"
+    creator = partial create_cell, ctx, synthesis_id
 
     new_cells = active_nodes.map creator
     new_cells.map process_subscribe
@@ -399,7 +397,7 @@ module.exports =
 
     get_cell: get_cell
 
-    start_synthesis: (root_node) ->
+    start_synthesis: (root_node, default_protocols=[]) ->
         # Entry point
         unless root_node
             error "Root node not specified"
@@ -407,16 +405,27 @@ module.exports =
 
         info 'Synthesis started'
 
-        root_idom = dispatch_impl 'IDom', root_node
+        ctx = 
+            dom_parser: (dispatch_impl 'IDom', root_node)
+            default_protocols: default_protocols
 
         # TODO use MutationObserver instead when applicable
-        root_idom.add_event_listener "DOMNodeInserted", (event) ->
+        ctx.dom_parser.add_event_listener "DOMNodeInserted", (event) ->
             setTimeout(
-                -> synthesize_node (dispatch_impl 'IDom', event.target)
+                -> (synthesize_node {dom_parser: (dispatch_impl 'IDom', event.target),\
+                                     default_protocols: default_protocols})
                 10
             )
 
-        synthesize_node root_idom
+        synthesize_node ctx
 
-    dump_cells: ->
-        info 'Cells synthesized for this document:', CELLS
+    get_bound_method: (cell, method_proto, method_name) ->
+        method_inv = cell.receptors[method_name]
+        throw "No method #{method_name}@#{cell.id}" unless method_inv
+
+        if method_proto is undefined and method_inv.length is 1
+            method_inv[0].impl
+        else
+            method_impl = method_inv.filter (m) -> m.ns is method_proto
+            throw "No method #{method_proto}/#{method_name}@#{cell.id}" unless method_impl.length is 1
+            method_impl[0].impl
