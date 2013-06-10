@@ -397,7 +397,7 @@ module.exports =
 
     get_cell: get_cell
 
-    start_synthesis: (root_node, default_protocols=[]) ->
+    start_synthesis: (root_node, default_protocols=['IDom', 'IHelper', 'IRenderable']) -> # TODO remove this after migrating
         # Entry point
         unless root_node
             error "Root node not specified"
