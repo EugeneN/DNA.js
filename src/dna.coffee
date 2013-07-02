@@ -26,6 +26,8 @@ Math = require '../utils/Math.uuid'
 {partial, is_array, is_object, bool,
  complement, compose3, distinct, repeat} = require 'libprotein'
 
+{observe_dom_added} = require 'mutation-observer'
+
 parse_genome = (require 'genome-parser').parse
 
 {
@@ -46,9 +48,7 @@ parse_genome = (require 'genome-parser').parse
 
 {info, warn, error, debug, nullog} = dispatch_impl 'ILogger', 'DNA'
 
-
 CELLS = {}
-
 
 process_vector = (vector, cell, ctx, cont) ->
     # FIXME paralellize with arrows
@@ -409,15 +409,18 @@ module.exports =
             dom_parser: (dispatch_impl 'IDom', root_node)
             default_protocols: default_protocols
 
-        # TODO use MutationObserver instead when applicable
-        ctx.dom_parser.add_event_listener "DOMNodeInserted", (event) ->
+        observe_dom_added root_node, (new_dom) ->
             setTimeout(
-                -> (synthesize_node {dom_parser: (dispatch_impl 'IDom', event.target),\
+                -> (synthesize_node {dom_parser: (dispatch_impl 'IDom', new_dom),\
                                      default_protocols: default_protocols})
                 10
             )
 
         synthesize_node ctx
+
+    synthesize_node: (node, default_protocols=['IDom', 'IHelper', 'IRenderable']) ->
+        synthesize_node {dom_parser: (dispatch_impl 'IDom', node), default_protocols: default_protocols}
+
 
     get_bound_method: (cell, method_proto, method_name) ->
         method_inv = cell.receptors[method_name]
