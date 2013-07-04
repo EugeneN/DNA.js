@@ -392,7 +392,7 @@ synthesize_node = (ctx) ->
 
     # debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
-module.exports =
+X =
     get_cells: -> CELLS
 
     get_cell: get_cell
@@ -432,3 +432,12 @@ module.exports =
             method_impl = method_inv.filter (m) -> m.ns is method_proto
             throw "No method #{method_proto}/#{method_name}@#{cell.id}" unless method_impl.length is 1
             method_impl[0].impl
+
+    call: (mspec, args...) ->
+        [meth_spec, cellid] = mspec.split '@'
+        [ns, meth_name] = meth_spec.split '/'
+
+        m = X.get_bound_method (X.get_cell cellid), ns, meth_name
+        m args...
+
+module.exports = X
