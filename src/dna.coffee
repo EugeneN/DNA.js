@@ -10,20 +10,22 @@ INTEGER =   'integer'
 FLOAT =     'float'
 VECTOR =    'vector'
 HASHMAP =   'hashmap'
+BQ =        'bq'
+RE =        're'
 
 FUNCTION =  'fn'
 PARTIAL_FN = 'partial'
 NESTED_EXPR = 'nested'
 QUOTED_NESTED_EXPR = 'quoted-nested'
 
-DNA_PRIMITIVES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT]
-DNA_DATATYPES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP]
+DNA_PRIMITIVES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, RE, BQ]
+DNA_DATATYPES = [NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP, RE, BQ]
 THIS = 'this'
 BUILTIN = '*builtin*'
 
 Math = require '../utils/Math.uuid'
 
-{partial, is_array, is_object, bool,
+{partial, is_array, is_object, bool, make_lambda,
  complement, compose3, distinct, repeat} = require 'libprotein'
 
 {observe_dom_added} = require 'mutation-observer'
@@ -150,19 +152,23 @@ get_primitive_value_handler = (type, value) ->
         when NULL
             fun_with_meta (-> null), {arity: 0, async: false, protocol: BUILTIN, name: "null"}
         when KEYWORD
-            fun_with_meta (-> value), {arity: 0, async: false, protocol: BUILTIN, name: "Keyword #{value}"}
+            fun_with_meta (-> value), {arity: 0, async: false, protocol: BUILTIN, name: ":Keyword #{value}"}
         when STRING
             fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "String '#{value}'"}
         when INTEGER
             fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "Integer '#{value}'"}
         when FLOAT
             fun_with_meta (-> value), {arity: 0, async: false, ns: BUILTIN, name: "Float '#{value}'"}
+        when BQ
+            fun_with_meta (-> make_lambda value), {arity: 0, async: false, ns: BUILTIN, name: "`Lambda '#{value}'"}
+        when RE
+            fun_with_meta (-> ((a) -> value.test a)), {arity: 0, async: false, ns: BUILTIN, name: "/Regexp/ '#{value}'"} 
         else
             throw "Unknown primitive type: #{type}/#{value}"
 
 get_value_handler = (type, value, cell, ctx) ->
     switch type
-        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT
+        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, BQ, RE
             get_primitive_value_handler type, value
         when VECTOR
             fun_with_meta(
@@ -247,7 +253,7 @@ process_ast_handler_node = (current_cell, ctx, handler) ->
         when QUOTED_NESTED_EXPR
             throw "QUOTED_NESTED_EXPR is not implemented yet"
 
-        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP
+        when NAN, NULL, KEYWORD, STRING, INTEGER, FLOAT, VECTOR, HASHMAP, RE, BQ
             (get_value_handler handler.type,
                                handler.value,
                                (_get_cell (handler.scope or THIS)),

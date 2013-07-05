@@ -4,7 +4,7 @@
     "name": "E.Naumenko"
   },
   "description": "DNA.js ======",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "scripts": {
     "postinstall": "cake build"
   },
@@ -21,6 +21,6 @@
   },
   "readmeFilename": "README.md",
   "readme": "DNA.js\n======\n\nAn approach to build CS apps using composable abstractions and declarative bindings.\n",
-  "_id": "dna-lang@0.2.12",
+  "_id": "dna-lang@0.2.13",
   "_from": "dna-lang@"
 }
