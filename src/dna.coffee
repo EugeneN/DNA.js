@@ -28,7 +28,7 @@ Math = require '../utils/Math.uuid'
 {partial, is_array, is_object, bool, make_lambda,
  complement, compose3, distinct, repeat} = require 'libprotein'
 
-{observe_dom_added} = require 'mutation-observer'
+{observe_dom_added} = require 'dom-mutation-observer'
 
 parse_genome = (require 'genome-parser').parse
 
