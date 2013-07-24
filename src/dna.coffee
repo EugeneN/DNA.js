@@ -410,7 +410,7 @@ X =
 
     get_cell: get_cell
 
-    start_synthesis: (root_node, default_protocols=['IDom', 'IHelper', 'IRenderable']) -> # TODO remove this after migrating
+    start_synthesis: (root_node, default_protocols) ->
         # Entry point
         unless root_node
             error "Root node not specified"
@@ -431,7 +431,7 @@ X =
 
         synthesize_node ctx
 
-    synthesize_node: (node, default_protocols=['IDom', 'IHelper', 'IRenderable']) ->
+    synthesize_node: (node, default_protocols) ->
         synthesize_node {dom_parser: (dispatch_impl 'IDom', node), default_protocols: default_protocols}
 
 
