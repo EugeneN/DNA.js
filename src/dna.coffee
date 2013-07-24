@@ -117,7 +117,7 @@ dispatch_handler = (ns, name, cell) ->
                throw "Method not found: #{ns}/#{name} in cell id=`#{cell.id}`"
 
         else
-            if method_from_given_ns.length is 1
+            if method_invariants.length is 1
                 method_invariants[0].impl
 
             else
