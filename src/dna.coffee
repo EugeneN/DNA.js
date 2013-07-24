@@ -107,19 +107,26 @@ dispatch_handler = (ns, name, cell) ->
     method_invariants = cell.receptors[name]
 
     if method_invariants
-        handler = if method_invariants.length is 1 and not ns
-            method_invariants[0]
-        else
-            (cell.receptors[name].filter (m) -> m.ns is ns)[0]
+        if ns
+            method_from_given_ns = (method_invariants.filter (m) -> m.ns is ns)[0]
+            if method_from_given_ns
+                method_from_given_ns.impl
 
-        if handler
-            handler.impl
+            else
+               error "Method not found: #{ns}/#{name} in cell", cell
+               throw "Method not found: #{ns}/#{name} in cell id=`#{cell.id}`"
+
         else
-            error "Handler missing", {ns, name, cell}
-            throw "Handler missing"
+            if method_from_given_ns.length is 1
+                method_invariants[0].impl
+
+            else
+                error "More then one method with name `#{name}` found in cell and namespace not set", cell
+                throw "More then one method with name `#{name}` found in cell id=`#{cell.id}` and namespace not set"
+                
     else
-        error "Handler missing", {ns, name, cell}
-        throw "Handler missing"
+        error "Method with name `#{name}` not found in cell", {ns, name, cell}
+        throw "Method with name `#{name}` not found in cell id=`#{cell.id}`"
 
 save_cell = (cell) -> CELLS[cell.id] = cell
 
