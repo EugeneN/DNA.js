@@ -364,6 +364,10 @@ synthesize_cell = (node, ctx, synthesis_id) ->
         p = get_protocol protocol
         proto_cell.impls[protocol] = dispatch_impl protocol, node
 
+        unless is_object proto_cell.impls[protocol]
+            error "Bad protocol implementation for DNA: #{protocol}", proto_cell.impls[protocol]
+            throw "Bad protocol implementation for DNA: #{protocol} :: #{proto_cell.impls[protocol]}"
+
         if p and proto_cell.impls[protocol]
             p.map ([name, args]) ->
                 m =
@@ -397,7 +401,7 @@ synthesize_node = (ctx) ->
     root_node = ctx.dom_parser.get_root_node()
     # debug 'Cells synthesis started for node', root_node
 
-    active_nodes = ctx.dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}], [id]"
+    active_nodes = ctx.dom_parser.get_by_attr "[data-#{DNA_EXTEND}], [data-#{DNA_SUBSCRIBE}]"
     creator = partial create_cell, ctx, synthesis_id
 
     new_cells = active_nodes.map creator
