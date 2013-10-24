@@ -52,7 +52,7 @@ parse_genome = (require 'genome-parser').parse
 
 CELLS = {}
 
-process_vector = (vector, cell, ctx, cont) ->
+process_ast_vector = (vector, cell, ctx, cont) ->
     # FIXME paralellize with arrows
     res = []
     count = vector.length
@@ -180,7 +180,7 @@ get_value_handler = (type, value, cell, ctx) ->
         when VECTOR
             fun_with_meta(
                 (cont) ->
-                    process_vector value, cell, ctx, (res) ->
+                    process_ast_vector value, cell, ctx, (res) ->
                         cont res
                 {async: true, arity: 1, protocol: BUILTIN, name: "Vector"}
             )
@@ -234,7 +234,7 @@ process_ast_handler_node = (current_cell, ctx, handler) ->
                         # TODO vargs support
                         accepted_args = args[0...arity]
 
-                        process_vector handler.args, current_cell, ctx, (calculated_args) ->
+                        process_ast_vector handler.args, current_cell, ctx, (calculated_args) ->
                             if h.meta.async
                                 h (calculated_args.concat accepted_args)...
                             else
@@ -291,9 +291,9 @@ make_monadized_handler = (ctx, cell, cont, handlr) ->
 bind_handlers_to_event = (ctx, cell, handlers, event_node) ->
     {type, args, name, ns, scope} = if event_node.type is 'partial-event'
         type:   'partial-event'
-        args:   event_node.args.map (partial process_ast_handler_node,
-                                             cell,
-                                             ctx)
+        args:   partial process_ast_vector, event_node.args, cell, ctx
+        # simple solution to unboxing event partial args
+        #args:   (event_node.args.map (partial process_ast_handler_node, cell, ctx)).map (a) -> a()
         name:   event_node.event.name
         ns:     event_node.event.ns
         scope:  event_node.event.scope
@@ -311,7 +311,12 @@ bind_handlers_to_event = (ctx, cell, handlers, event_node) ->
                                                 ctx))
     # TBD delegate this later
     handlers.map (handlr) ->
-        event_binder (args.concat [handlr])...
+        if event_node.type is 'partial-event'
+            # full-featured solution to unboxing event partial args
+            args (processed_args) ->
+                event_binder (processed_args.concat [handlr])...
+        else
+            event_binder (args.concat [handlr])...
 
 make_dynamic_handler = (ctx, cell, cont, handlr) ->
     (args...) ->

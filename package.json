@@ -4,7 +4,7 @@
     "name": "E.Naumenko"
   },
   "description": "DNA.js ======",
-  "version": "0.2.15",
+  "version": "0.2.17",
   "scripts": {
     "postinstall": "cake build"
   },
