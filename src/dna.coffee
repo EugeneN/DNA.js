@@ -419,6 +419,9 @@ X =
 
     get_cell: get_cell
 
+    forget_cell: (id) ->
+        delete CELLS[id]
+
     start_synthesis: (root_node, default_protocols) ->
         # Entry point
         unless root_node
