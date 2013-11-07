@@ -49,8 +49,19 @@ parse_genome = (require 'genome-parser').parse
 } = require 'libmonad'
 
 {info, warn, error, debug, nullog} = dispatch_impl 'ILogger', 'DNA'
+{get_state, swap_state, watch_state} = require 'libstate'
 
-CELLS = {}
+MY_STATE = 'dna'
+watch_my_state = (old_state, new_state) -> debug "state changed", old_state, new_state
+
+lazy_init_state = (state) ->
+    # TODO types?
+    state or= {}
+    state.CELLS or= {}
+
+    watch_state MY_STATE, watch_my_state
+
+    state
 
 process_ast_vector = (vector, cell, ctx, cont) ->
     # FIXME paralellize with arrows
@@ -128,9 +139,14 @@ dispatch_handler = (ns, name, cell) ->
         error "Method with name `#{name}` not found in cell", {ns, name, cell}
         throw "Method with name `#{name}` not found in cell id=`#{cell.id}`"
 
-save_cell = (cell) -> CELLS[cell.id] = cell
+save_cell = (cell) ->
+    swap_state MY_STATE, (old_state) ->
+        new_state = lazy_init_state old_state
+        new_state.CELLS[cell.id] = cell
+        new_state
 
-get_cell = (id) -> CELLS[id]
+get_cell = (id) ->
+    (lazy_init_state (get_state MY_STATE)).CELLS[id]
 
 find_cell = (scope_id, this_cell, ctx) ->
     if (scope_id is THIS or not scope_id) and this_cell
@@ -415,12 +431,15 @@ synthesize_node = (ctx) ->
     # debug "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 X =
-    get_cells: -> CELLS
+    get_cells: -> (lazy_init_state (get_state MY_STATE)).CELLS
 
     get_cell: get_cell
 
     forget_cell: (id) ->
-        delete CELLS[id]
+        swap_state MY_STATE, (old_state) ->
+            new_state = lazy_init_state old_state
+            delete new_state.CELLS[id]
+            new_state
 
     start_synthesis: (root_node, default_protocols) ->
         # Entry point
