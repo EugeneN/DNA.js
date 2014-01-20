@@ -52,7 +52,7 @@ parse_genome = (require 'genome-parser').parse
 {get_state, swap_state, watch_state} = require 'libstate'
 
 MY_STATE = 'dna'
-watch_my_state = (old_state, new_state) -> debug "state changed", old_state, new_state
+watch_my_state = (old_state, new_state) -> #debug "state changed", old_state, new_state
 
 lazy_init_state = (state) ->
     # TODO types?
@@ -66,24 +66,30 @@ lazy_init_state = (state) ->
 process_ast_vector = (vector, cell, ctx, cont) ->
     # FIXME paralellize with arrows
     res = []
-    count = vector.length
-    local_cont = (idx) ->
-        (r) ->
-            res[idx] = r
-            count--
 
-            if count is 0
-                cont res
+    if vector.length is 0
+        cont res
 
-    vector.map (ast_node, idx) ->
-        h = process_ast_handler_node cell, ctx, ast_node
-        c = (local_cont idx)
+    else
+        count = vector.length
 
-        # vector currently passes no arguments to its member
-        if h.meta.async
-            h ((repeat undefined, h.meta.arity-1).concat [c])...
-        else
-            c (h (repeat undefined, h.meta.arity)...)
+        local_cont = (idx) ->
+            (r) ->
+                res[idx] = r
+                count--
+
+                if count is 0
+                    cont res
+
+        vector.map (ast_node, idx) ->
+            h = process_ast_handler_node cell, ctx, ast_node
+            c = (local_cont idx)
+
+            # vector currently passes no arguments to its member
+            if h.meta.async
+                h ((repeat undefined, h.meta.arity-1).concat [c])...
+            else
+                c (h (repeat undefined, h.meta.arity)...)
 
 default_handlers_cont = (args...) ->
     #debug "DNA monadic sequence finished with results:", args
